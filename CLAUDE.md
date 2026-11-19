@@ -103,7 +103,7 @@ npm run lint         # ESLint; `no-explicit-any` is an error
 
 Setup: copy `server/.env.example` to `server/.env` and set `MONGODB_URI` (MongoDB Atlas free tier or
 local `mongod`). Tests need no database: they start an in-memory MongoDB. The first run downloads
-its binary (about 100 MB).
+its binary (about 800 MB, cached after that).
 
 ## Development rules
 
