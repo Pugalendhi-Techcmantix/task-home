@@ -1,4 +1,5 @@
-import type { Server } from "node:http";
+import { once } from "node:events";
+import { createServer, type Server } from "node:http";
 import mongoose from "mongoose";
 import { createApp } from "./app";
 
@@ -13,11 +14,11 @@ export async function startServer(
 ): Promise<Server> {
   await mongoose.connect(mongoUri);
 
-  const app = createApp();
-  const server = await new Promise<Server>((resolve, reject) => {
-    const listening = app.listen(port, () => resolve(listening));
-    listening.once("error", reject);
-  });
+  // Use a plain http.Server: Express 5's app.listen() calls its callback on errors too,
+  // which would report "listening" when the port is already taken.
+  const server = createServer(createApp());
+  server.listen(port);
+  await once(server, "listening"); // rejects on 'error' (e.g. EADDRINUSE)
   console.log(`API listening on http://localhost:${port}`);
 
   const shutdown = (): void => {

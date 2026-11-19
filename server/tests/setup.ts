@@ -6,7 +6,9 @@ let mongo: MongoMemoryServer | undefined;
 
 beforeAll(async () => {
   mongo = await MongoMemoryServer.create();
-  await mongoose.connect(mongo.getUri());
+  const uri = mongo.getUri();
+  process.env.TEST_MONGODB_URI = uri; // lets tests that start the real server reuse this database
+  await mongoose.connect(uri);
 });
 
 afterEach(async () => {
