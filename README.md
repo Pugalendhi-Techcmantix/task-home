@@ -1,155 +1,171 @@
-# Team Task & Bug Tracker
+# Task Tracker
 
-A lightweight full-stack tracker where team members log tasks or bugs, filter them by status or
-priority, update their status, and delete them. It's built with MongoDB, Express, React and
-Node.js, all in strict TypeScript.
+A full-stack team task and bug tracker: a dashboard, a task list you can filter, update and
+reassign, team management, and roles. It's built with MongoDB, Express, React and Node.js, all in
+strict TypeScript.
 
-![Task list](docs/images/task-list.png)
+> **Two versions live in this repo.**
+> - `main` is the **minimal submission**: exactly what the take-home brief asks for (one page with the four REST endpoints).
+> - `feature/full-app` (this branch) builds a **complete application** on top of it, without changing the brief's API contract.
 
-![New task panel with inline validation](docs/images/new-task.png)
+![Dashboard](docs/images/dashboard-light.png)
+
+| Tasks (dark mode) | Team members |
+|---|---|
+| ![Tasks in dark mode](docs/images/tasks-dark.png) | ![Team members](docs/images/team-light.png) |
+
+## What's in it
+
+- **App shell:** a sidebar that collapses to an icon rail (button or <kbd>Ctrl</kbd>+<kbd>B</kbd>,
+  remembered), a light/dark/system theme (remembered, with no flash on load), and a
+  <kbd>Ctrl</kbd>+<kbd>K</kbd> command palette that jumps to pages, tasks and people.
+- **Dashboard:** open, in-progress, high-priority and done-this-week counts. Also a "Needs
+  attention" list, workload per member and tasks by status. Everything links to the filtered task list.
+- **Tasks:**
+  - Status tabs with counts, plus priority and assignee filters. Filtering happens on the server,
+    and the filters are kept in the URL.
+  - Sort by newest or priority.
+  - Change status inline (it updates immediately and rolls back if the save fails), reassign, and
+    delete with a confirmation.
+  - Press <kbd>N</kbd> anywhere for **New task**.
+- **Team members:** add, edit, deactivate and reactivate people. Emails are unique regardless of
+  case, and each member shows an open-task count.
+- **Roles & access:** change roles (Admin / Member / Viewer) and active status. The last active
+  admin can't be removed.
+- Loading, empty and error states on every page, toasts for every change, keyboard support, and
+  a layout that works from phones to wide screens.
 
 ## Tech stack
 
 | Layer | Tools |
 |---|---|
 | API | Node.js, Express 5, Mongoose 9 (MongoDB), TypeScript (strict) |
-| Validation | Zod 4. The same schemas are shared by the API and the UI. |
+| Validation | Zod 4: **one set of schemas shared by the API and the UI** |
 | Tests | Vitest + Supertest + mongodb-memory-server |
-| UI | React 19, Vite 8, Tailwind CSS 4, lucide-react icons |
-| Tooling | npm workspaces, ESLint (typescript-eslint, `no-explicit-any` = error) |
+| UI | React 19, Vite 8, Tailwind CSS 4, **shadcn/ui (Radix)**, React Router 7, TanStack Query 5, Geist font, lucide icons |
+| Tooling | npm workspaces, ESLint (type-aware, `no-explicit-any` = error) |
 
 ## Project structure
 
 ```
-shared/   Zod schemas, enums and inferred types: the single source of truth for both sides
+shared/   Zod schemas + inferred types (task, member, dashboard): the single source of truth
 server/   Express API
-  src/app.ts             createApp() (no listen), used by the tests
-  src/server.ts          connect to MongoDB + listen + graceful shutdown
-  src/index.ts           entry: validated env → startServer
-  src/dev-memory.ts      dev entry with a throwaway in-memory MongoDB
-  src/config/env.ts      Zod-validated environment variables
-  src/models/            Mongoose model + toTaskDto (API shape: id, ISO dates)
-  src/controllers/       request handlers
-  src/routes/            /api/tasks router
-  src/middleware/        central error handler, 404 handler
-  tests/                 API tests (Supertest, in-memory MongoDB)
-client/   React single-page app
-  src/api/tasks.ts       the only fetch caller; validates every response with the shared schemas
-  src/hooks/useTasks.ts  list state, server-side filters, mutations
-  src/components/        table, toolbar, status select, badges, drawer, form, toasts
+  src/app.ts            createApp() (no listen), used by the tests
+  src/server.ts         connect + listen + graceful shutdown (fails fast if the port is taken)
+  src/controllers/      tasks, members, dashboard
+  src/models/           Mongoose models + DTO mappers (id, ISO dates)
+  src/seed/             sample data + `npm run seed`
+  tests/                API tests against an in-memory MongoDB
+client/   React app
+  src/api/              the only fetch callers; every response validated with the shared schemas
+  src/components/ui     shadcn/ui components
+  src/components/layout sidebar, top bar, theme switch, command palette
+  src/features/         dashboard, tasks, team, roles (page + pieces + data hooks)
 ```
 
-**How type safety works end to end:** `shared/src/task.ts` defines the Zod schemas once. The API
-validates requests with them. The UI validates the form and parses every API response with them.
-All `Task` / input types come from `z.infer`, so neither side redefines a type or a rule.
+The `Task` and `Member` types and every validation rule are defined once in `shared/`. The API
+validates requests with them, and the UI validates forms and parses every response with them.
+Neither side redefines a type.
 
 ## Prerequisites
 
-- Node.js 22.13+ or 24+ (developed on Node 24). Vitest 5 and ESLint 10 need at least this.
+- Node.js 22.13+ or 24+ (Vitest 5 and ESLint 10 need it)
 - For `npm run dev`: a MongoDB database, either local `mongod` or a free
-  [MongoDB Atlas](https://www.mongodb.com/atlas) cluster. Neither `npm test` nor `npm run dev:memory`
-  needs one.
+  [MongoDB Atlas](https://www.mongodb.com/atlas) cluster. `npm test` and `npm run dev:memory` need no database.
 
-## Setup
+## Setup and running
 
 ```bash
-git clone <this-repo-url> task-tracker
-cd task-tracker
 npm install
-cp server/.env.example server/.env    # then set MONGODB_URI
+cp server/.env.example server/.env    # set MONGODB_URI
+
+npm run dev:memory   # quickest: temporary in-memory MongoDB, pre-filled with sample data
+npm run dev          # API on :4000 + UI on :5173 against MONGODB_URI
 ```
 
-Environment variables (`server/.env`):
+Open http://localhost:5173. Vite proxies `/api` to the API on the same `PORT` (read from the
+shell or `server/.env`).
+
+**Sample data for a real database:**
+
+```bash
+npm run seed               # adds 6 members and 24 tasks, only if tasks and members are empty
+npm run seed -- --force    # DELETES all tasks and members in that database, then reseeds
+```
+
+The seed prints the database name and host before it writes anything.
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `PORT` | no | `4000` | Port the API listens on |
-| `MONGODB_URI` | yes | (none) | `mongodb://…` or `mongodb+srv://…` connection string |
-
-The API checks these at startup. If `MONGODB_URI` is missing or malformed, it stops with a clear message.
-
-## Running
-
-```bash
-npm run dev          # API on http://localhost:4000 + UI on http://localhost:5173
-npm run dev:memory   # same, but with a temporary in-memory MongoDB (no setup; data resets on restart)
-```
-
-Open http://localhost:5173. Vite proxies `/api` to the API on the same `PORT` (read from the shell or
-`server/.env`), so the UI needs no configuration.
-Press <kbd>N</kbd> anywhere on the page to open the "New task" panel.
+| `PORT` | no | `4000` | API port (the UI proxy follows it) |
+| `MONGODB_URI` | yes | (none) | `mongodb://…` or `mongodb+srv://…` |
 
 ## Tests and checks
 
 ```bash
-npm test             # API, schema and client API-module tests (Vitest)
+npm test             # shared schemas, API, and client API-module tests (Vitest)
 npm run typecheck    # tsc --noEmit for every workspace
 npm run lint         # ESLint (type-aware)
 npm run build        # production build of the UI
 ```
 
-The tests start their own in-memory MongoDB, so no database is needed. **The first run downloads a
-MongoDB binary (about 800 MB).** It's cached after that.
-
-Coverage includes:
-- **POST:** 201 with saved fields and defaults. 400 with field errors for a missing, too-short or
-  whitespace-only title. 400 for malformed JSON.
-- **GET:** newest first, filtering by `status`, `priority` and both. 400 for an invalid filter.
-- **PATCH:** status and priority updates are persisted. 404 for unknown and malformed ids. 400 for an
-  empty body, a `title` change or an invalid status.
-- **DELETE:** 200 confirmation, then the task is gone. 404 for unknown and malformed ids.
-- **Schemas:** length boundaries (3/100 title, 500 description), trimming, unknown keys rejected.
-- **Env:** default port, missing or invalid variables.
+The tests start their own in-memory MongoDB. **The first run downloads a MongoDB binary (about
+800 MB),** which is cached after that. The suite covers:
+- every endpoint's success and error paths (400, 404, 409)
+- the last-admin guard and email normalization
+- assignment rules (inactive or unknown members are rejected)
+- `completedAt`, dashboard maths including the week boundary
+- seeding, which refuses without `--force` and leaves other collections alone
+- client request building and response validation
 
 ## API
 
-Base URL: `/api`. Responses use `id` (string) and ISO-8601 dates.
+Base URL `/api`. Responses use `id` (string) and ISO-8601 dates.
+
+**From the brief (unchanged contract):**
 
 | Method | Path | Body / query | Success | Errors |
 |---|---|---|---|---|
-| GET | `/tasks` | `?status=todo\|in_progress\|done&priority=low\|medium\|high` (both optional) | `200 Task[]`, newest first | `400` invalid filter |
-| POST | `/tasks` | `{ title, description?, status?, priority? }` | `201 Task` | `400` validation |
-| PATCH | `/tasks/:id` | `{ status?, priority? }` (at least one) | `200 Task` | `400` validation · `404` unknown **or malformed** id |
-| DELETE | `/tasks/:id` | (none) | `200 { message: "Task deleted", id }` | `404` unknown or malformed id |
+| GET | `/tasks` | `?status=` `?priority=` `?assigneeId=<id>\|unassigned` | `200 Task[]` newest first | `400` |
+| POST | `/tasks` | `{ title, description?, status?, priority?, assigneeId? }` | `201 Task` | `400` |
+| PATCH | `/tasks/:id` | `{ status?, priority? }` (at least one, **nothing else**) | `200 Task` | `400` · `404` unknown **or malformed** id |
+| DELETE | `/tasks/:id` | (none) | `200 { message, id }` | `404` |
 
-Rules: `title` is trimmed, 3–100 characters. `description` is at most 500 characters.
-`status` defaults to `todo` and `priority` to `medium`. Unknown fields are rejected.
+**Added in this version:**
 
-Every error has the same shape:
+| Method | Path | Body / query | Success | Errors |
+|---|---|---|---|---|
+| PATCH | `/tasks/:id/assignee` | `{ assigneeId: string \| null }` | `200 Task` | `400` inactive or unknown member · `404` |
+| GET | `/members` | `?status=` `?role=` | `200 Member[]` (with `openTaskCount`) | `400` |
+| POST | `/members` | `{ name, email, role? }` | `201 Member` | `400` · `409` email taken |
+| PATCH | `/members/:id` | `{ name?, email?, role?, status? }` | `200 Member` | `400` (incl. last active admin) · `404` · `409` |
+| GET | `/dashboard/summary` | (none) | `200 { totals, byStatus, byPriority, workload, needsAttention }` | (none) |
+
+Every error has the same shape. `errors` appears for field-level problems:
 
 ```json
-{
-  "message": "Validation failed",
-  "errors": [{ "field": "title", "message": "Title must be at least 3 characters" }]
-}
+{ "message": "Validation failed", "errors": [{ "field": "title", "message": "Title must be at least 3 characters" }] }
 ```
 
-`errors` is present only for validation failures.
+## Design decisions and trade-offs
 
-## Trade-offs (3-hour time box)
-
-1. **Refetch after every change instead of a cache library.** A status change shows in the row right
-   away, and the list is refetched after every create, update or delete. If a save fails, the refetch
-   puts the row back. That costs one extra request, but the list always matches the server-side
-   filters. For example, a task moved to "Done" leaves a "To do" view, with no client-side filter logic
-   to keep in sync. A library like TanStack Query would add caching and finer-grained updates, but
-   also more code to explain.
-2. **Few frontend automated tests.** The brief asks for API tests, so the time went into those plus
-   strict typing. On the client, only the API module has unit tests (aborts, unexpected responses).
-   Every UI flow was checked by hand in a real browser (Playwright) at desktop and phone width:
-   create, validation errors, filters, status change, delete, empty, loading and error states,
-   keyboard-only use, reduced motion. Next step: React Testing Library tests for the form, plus a
-   Playwright end-to-end run in CI.
-
-Smaller choices:
-- The shared package is consumed as TypeScript source, and the API runs through `tsx`. There's no
-  compile step for the server, which keeps the setup simple. A production build would add a `tsc`
-  emit step.
-- There's no pagination. The list returns every matching task.
+1. **No sign-in, by design.** Roles are descriptive labels and are not enforced. Adding auth would
+   put a token on every request and break the brief's endpoints for anyone testing them as
+   specified. The data model and API are ready for an auth layer later.
+2. **Reassignment has its own endpoint.** `PATCH /tasks/:id` still accepts only status and priority,
+   exactly as the brief specifies. Assignment is a separate concern with its own validation
+   (active member only).
+3. **TanStack Query instead of hand-written fetching.** v1 refetched manually. With several pages
+   sharing data, a cache with invalidation is simpler and keeps the sidebar counts, dashboard and
+   lists in sync. Status changes update immediately and roll back on failure.
+4. **Deactivate, never delete, members.** This keeps task history and assignments intact.
+5. **Few frontend unit tests.** The time went into API tests and strict typing. Every UI flow was
+   verified in a real browser (Playwright) in light and dark at desktop and phone width.
+   Next step: React Testing Library for the forms, plus a Playwright e2e run in CI.
 
 ## With more time
 
-- Pagination, plus sorting by priority or date
-- Editing a task's title and description
-- Frontend tests (React Testing Library) and Playwright e2e in CI
-- Docker Compose for MongoDB + API + UI
+- Sign-in with enforced roles
+- Editing task title and description, comments, due dates
+- Pagination and full-text search on the server
+- Frontend component tests and an e2e suite in CI, plus Docker Compose for the whole stack

@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { NewTaskProvider } from "@/features/tasks/NewTaskProvider";
 import { AppSidebar } from "./AppSidebar";
+import { CommandPalette } from "./CommandPalette";
 import { ThemeToggle } from "./ThemeToggle";
 
 const PAGE_TITLES: Record<string, string> = {
@@ -64,6 +65,7 @@ export function AppLayout() {
               </BreadcrumbList>
             </Breadcrumb>
             <div className="ml-auto flex items-center gap-1.5">
+              <CommandPalette />
               <ThemeToggle />
               <Tooltip>
                 <TooltipTrigger asChild>
