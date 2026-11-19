@@ -45,7 +45,7 @@ All `Task` / input types come from `z.infer`, so neither side redefines a type o
 
 ## Prerequisites
 
-- Node.js 20 or newer (developed on Node 24)
+- Node.js 22.13+ or 24+ (developed on Node 24). Vitest 5 and ESLint 10 need at least this.
 - For `npm run dev`: a MongoDB database, either local `mongod` or a free
   [MongoDB Atlas](https://www.mongodb.com/atlas) cluster. Neither `npm test` nor `npm run dev:memory`
   needs one.
