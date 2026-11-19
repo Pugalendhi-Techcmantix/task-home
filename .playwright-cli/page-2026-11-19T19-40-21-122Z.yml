@@ -1,0 +1,213 @@
+- generic [ref=f36e2]:
+  - generic [ref=f36e3]:
+    - generic [ref=f36e6]:
+      - generic [ref=f36e7]: T
+      - generic [ref=f36e10]:
+        - generic [ref=f36e11]:
+          - generic [ref=f36e12]: Workspace
+          - list [ref=f36e13]:
+            - listitem [ref=f36e14]:
+              - link "Dashboard" [ref=f36e15] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=f36e21]:
+              - link "Tasks" [ref=f36e22] [cursor=pointer]:
+                - /url: /tasks
+            - listitem [ref=f36e26]:
+              - link "Team members" [ref=f36e27] [cursor=pointer]:
+                - /url: /team
+        - generic [ref=f36e33]:
+          - generic [ref=f36e34]: Admin
+          - list [ref=f36e35]:
+            - listitem [ref=f36e36]:
+              - link "Roles & access" [ref=f36e37] [cursor=pointer]:
+                - /url: /roles
+      - button "Toggle Sidebar" [ref=f36e41]
+    - main [ref=f36e42]:
+      - generic [ref=f36e43]:
+        - button "Toggle sidebar" [ref=f36e44]:
+          - generic [ref=f36e45]: Toggle Sidebar
+        - navigation "breadcrumb" [ref=f36e46]:
+          - list [ref=f36e47]:
+            - listitem [ref=f36e48]: Team workspace
+            - listitem [aria-hidden] [ref=f36e49]
+            - listitem [ref=f36e52]:
+              - link "Dashboard" [disabled] [ref=f36e53]
+        - generic [ref=f36e54]:
+          - button "Search tasks, people…" [ref=f36e55]:
+            - generic [aria-hidden] [ref=f36e57]: Ctrl K
+          - generic [ref=f36e58]:
+            - heading "Search" [level=2] [ref=f36e59]
+            - paragraph [ref=f36e60]: Jump to a page, task or team member, or run an action.
+          - 'button "Theme: light. Change theme" [ref=f36e61]'
+          - generic "Workspace admin" [ref=f36e62]: WA
+      - main [ref=f36e63]:
+        - generic [ref=f36e64]:
+          - generic [ref=f36e65]:
+            - heading "Dashboard" [level=1] [ref=f36e66]
+            - paragraph [ref=f36e67]: "Where your team's work stands right now: what's open, what's urgent, and who's carrying the load."
+          - button "New task" [ref=f36e69]
+        - generic [ref=f36e70]:
+          - generic [ref=f36e71]:
+            - generic [ref=f36e72]:
+              - paragraph [ref=f36e73]: Open tasks
+              - paragraph [ref=f36e74]: "16"
+              - paragraph [ref=f36e75]: across 5 active members
+            - generic [ref=f36e76]:
+              - paragraph [ref=f36e77]: In progress
+              - paragraph [ref=f36e78]: "6"
+              - paragraph [ref=f36e79]: started, not finished
+            - generic [ref=f36e80]:
+              - paragraph [ref=f36e81]: High priority
+              - paragraph [ref=f36e82]: "5"
+              - paragraph [ref=f36e83]: open and urgent
+            - generic [ref=f36e84]:
+              - paragraph [ref=f36e85]: Done this week
+              - paragraph [ref=f36e86]: "2"
+              - paragraph [ref=f36e87]: since Monday
+          - generic [ref=f36e88]:
+            - generic [ref=f36e89]:
+              - generic [ref=f36e90]:
+                - heading "Needs attention" [level=2] [ref=f36e91]
+                - link "All high priority" [ref=f36e92] [cursor=pointer]:
+                  - /url: /tasks?priority=high
+              - list [ref=f36e95]:
+                - listitem [ref=f36e96]:
+                  - link "Login button unresponsive on Safari High created Nov 20 In progress Arun Kumar" [ref=f36e97] [cursor=pointer]:
+                    - /url: /tasks?task=6aff4e2137dd86eef1498b08
+                    - generic [ref=f36e98]:
+                      - paragraph [ref=f36e99]: Login button unresponsive on Safari
+                      - paragraph [ref=f36e100]:
+                        - generic [ref=f36e101]: High
+                        - generic [aria-hidden] [ref=f36e104]: ·
+                        - text: created Nov 20
+                    - generic [ref=f36e105]: In progress
+                    - generic [ref=f36e107]:
+                      - generic [aria-hidden] [ref=f36e108]: AK
+                      - generic [ref=f36e109]: Arun Kumar
+                - listitem [ref=f36e110]:
+                  - link "Crash when uploading an avatar larger than 5 MB High created Nov 19 In progress Meera Raman" [ref=f36e111] [cursor=pointer]:
+                    - /url: /tasks?task=6aff4e2137dd86eef1498b09
+                    - generic [ref=f36e112]:
+                      - paragraph [ref=f36e113]: Crash when uploading an avatar larger than 5 MB
+                      - paragraph [ref=f36e114]:
+                        - generic [ref=f36e115]: High
+                        - generic [aria-hidden] [ref=f36e118]: ·
+                        - text: created Nov 19
+                    - generic [ref=f36e119]: In progress
+                    - generic [ref=f36e121]:
+                      - generic [aria-hidden] [ref=f36e122]: MR
+                      - generic [ref=f36e123]: Meera Raman
+                - listitem [ref=f36e124]:
+                  - link "Fix password reset email link expiry High created Nov 19 In progress Sam Lee" [ref=f36e125] [cursor=pointer]:
+                    - /url: /tasks?task=6aff4e2137dd86eef1498b0a
+                    - generic [ref=f36e126]:
+                      - paragraph [ref=f36e127]: Fix password reset email link expiry
+                      - paragraph [ref=f36e128]:
+                        - generic [ref=f36e129]: High
+                        - generic [aria-hidden] [ref=f36e132]: ·
+                        - text: created Nov 19
+                    - generic [ref=f36e133]: In progress
+                    - generic [ref=f36e135]:
+                      - generic [aria-hidden] [ref=f36e136]: SL
+                      - generic [ref=f36e137]: Sam Lee
+                - listitem [ref=f36e138]:
+                  - link "Checkout total ignores discount codes High created Nov 18 To do Unassigned" [ref=f36e139] [cursor=pointer]:
+                    - /url: /tasks?task=6aff4e2137dd86eef1498b0b
+                    - generic [ref=f36e140]:
+                      - paragraph [ref=f36e141]: Checkout total ignores discount codes
+                      - paragraph [ref=f36e142]:
+                        - generic [ref=f36e143]: High
+                        - generic [aria-hidden] [ref=f36e146]: ·
+                        - text: created Nov 18
+                    - generic [ref=f36e147]: To do
+                    - generic [ref=f36e149]: Unassigned
+                - listitem [ref=f36e151]:
+                  - link "Keyboard trap in the date picker High created Nov 12 To do Meera Raman" [ref=f36e152] [cursor=pointer]:
+                    - /url: /tasks?task=6aff4e2137dd86eef1498b16
+                    - generic [ref=f36e153]:
+                      - paragraph [ref=f36e154]: Keyboard trap in the date picker
+                      - paragraph [ref=f36e155]:
+                        - generic [ref=f36e156]: High
+                        - generic [aria-hidden] [ref=f36e159]: ·
+                        - text: created Nov 12
+                    - generic [ref=f36e160]: To do
+                    - generic [ref=f36e162]:
+                      - generic [aria-hidden] [ref=f36e163]: MR
+                      - generic [ref=f36e164]: Meera Raman
+            - generic [ref=f36e165]:
+              - generic [ref=f36e166]:
+                - heading "Workload by member" [level=2] [ref=f36e167]
+                - generic [ref=f36e168]: open tasks
+              - list [ref=f36e169]:
+                - listitem [ref=f36e170]:
+                  - generic [ref=f36e171]:
+                    - link [ref=f36e172] [cursor=pointer]:
+                      - /url: /tasks?assignee=6aff4e2137dd86eef1498b03
+                      - generic [ref=f36e173]:
+                        - generic [aria-hidden] [ref=f36e174]: AK
+                        - text: Arun Kumar
+                    - generic [ref=f36e175]: "3"
+                - listitem [ref=f36e178]:
+                  - generic [ref=f36e179]:
+                    - link [ref=f36e180] [cursor=pointer]:
+                      - /url: /tasks?assignee=6aff4e2137dd86eef1498b04
+                      - generic [ref=f36e181]:
+                        - generic [aria-hidden] [ref=f36e182]: MR
+                        - text: Meera Raman
+                    - generic [ref=f36e183]: "3"
+                - listitem [ref=f36e186]:
+                  - generic [ref=f36e187]:
+                    - link [ref=f36e188] [cursor=pointer]:
+                      - /url: /tasks?assignee=6aff4e2137dd86eef1498b05
+                      - generic [ref=f36e189]:
+                        - generic [aria-hidden] [ref=f36e190]: SL
+                        - text: Sam Lee
+                    - generic [ref=f36e191]: "3"
+                - listitem [ref=f36e194]:
+                  - generic [ref=f36e195]:
+                    - link [ref=f36e196] [cursor=pointer]:
+                      - /url: /tasks?assignee=6aff4e2137dd86eef1498b02
+                      - generic [ref=f36e197]:
+                        - generic [aria-hidden] [ref=f36e198]: PS
+                        - text: Priya Sharma
+                    - generic [ref=f36e199]: "2"
+                - listitem [ref=f36e202]:
+                  - generic [ref=f36e203]:
+                    - link [ref=f36e204] [cursor=pointer]:
+                      - /url: /tasks?assignee=6aff4e2137dd86eef1498b06
+                      - generic [ref=f36e205]:
+                        - generic [aria-hidden] [ref=f36e206]: JT
+                        - text: Jo Taylor
+                    - generic [ref=f36e207]: "1"
+                - listitem [ref=f36e210]:
+                  - generic [ref=f36e211]:
+                    - link "Unassigned" [ref=f36e212] [cursor=pointer]:
+                      - /url: /tasks?assignee=unassigned
+                    - generic [ref=f36e214]: "3"
+                - listitem [ref=f36e217]:
+                  - generic [ref=f36e218]:
+                    - generic [ref=f36e219]: Inactive members
+                    - generic [ref=f36e220]: "1"
+          - generic [ref=f36e223]:
+            - generic [ref=f36e224]:
+              - heading "Tasks by status" [level=2] [ref=f36e225]
+              - generic [ref=f36e226]: 24 total
+            - generic [ref=f36e227]:
+              - img "To do 10, In progress 6, Done 8" [ref=f36e228]
+              - generic [ref=f36e232]:
+                - generic [ref=f36e233]:
+                  - term [ref=f36e234]: To do
+                  - definition [ref=f36e236]:
+                    - link "10" [ref=f36e237] [cursor=pointer]:
+                      - /url: /tasks?status=todo
+                - generic [ref=f36e238]:
+                  - term [ref=f36e239]: In progress
+                  - definition [ref=f36e241]:
+                    - link "6" [ref=f36e242] [cursor=pointer]:
+                      - /url: /tasks?status=in_progress
+                - generic [ref=f36e243]:
+                  - term [ref=f36e244]: Done
+                  - definition [ref=f36e246]:
+                    - link "8" [ref=f36e247] [cursor=pointer]:
+                      - /url: /tasks?status=done
+  - region "Notifications alt+T"

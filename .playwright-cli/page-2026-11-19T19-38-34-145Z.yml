@@ -1,0 +1,530 @@
+- generic:
+  - generic:
+    - generic [aria-hidden]:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic: T
+                - generic: Task Tracker
+            - generic:
+              - generic:
+                - generic: Workspace
+                - list:
+                  - listitem:
+                    - link:
+                      - /url: /
+                      - generic: Dashboard
+                  - listitem:
+                    - link:
+                      - /url: /tasks
+                      - generic: Tasks
+                    - generic: "24"
+                  - listitem:
+                    - link:
+                      - /url: /team
+                      - generic: Team members
+                    - generic: "6"
+              - generic:
+                - generic: Admin
+                - list:
+                  - listitem:
+                    - link:
+                      - /url: /roles
+                      - generic: Roles & access
+            - button
+      - main:
+        - generic:
+          - button:
+            - generic: Toggle Sidebar
+          - navigation:
+            - list:
+              - listitem: Team workspace
+              - listitem [aria-hidden]
+              - listitem:
+                - link [disabled]: Tasks
+          - generic:
+            - button:
+              - generic: Search tasks, people…
+              - generic [aria-hidden]: Ctrl K
+            - generic:
+              - heading [level=2]: Search
+              - paragraph: Jump to a page, task or team member, or run an action.
+            - button
+            - generic: WA
+        - main:
+          - generic:
+            - generic:
+              - heading [level=1]: Tasks
+              - paragraph: Every task and bug your team has logged. Filter, reassign and update status right from the list.
+            - generic:
+              - button:
+                - text: New task
+                - generic [aria-hidden]: "N"
+          - generic:
+            - generic:
+              - generic:
+                - tablist:
+                  - tab [selected]:
+                    - text: All
+                    - generic: "24"
+                  - tab:
+                    - text: To do
+                    - generic: "10"
+                  - tab:
+                    - text: In progress
+                    - generic: "6"
+                  - tab:
+                    - text: Done
+                    - generic: "8"
+              - generic:
+                - generic: Priority
+                - combobox:
+                  - generic: "Priority:"
+                  - generic: All
+                - generic: Assignee
+                - combobox:
+                  - generic: "Assignee:"
+                  - generic: All
+                - generic:
+                  - tablist:
+                    - tab [selected]: Newest
+                    - tab: Priority
+            - generic:
+              - table:
+                - caption: Tasks
+                - rowgroup:
+                  - row:
+                    - columnheader: Task
+                    - columnheader: Status
+                    - columnheader: Priority
+                    - columnheader: Assignee
+                    - columnheader: Created
+                    - columnheader:
+                      - generic: Actions
+                - rowgroup:
+                  - row:
+                    - cell:
+                      - paragraph: Login button unresponsive on Safari
+                      - paragraph: Clicking Sign in does nothing on Safari 18. Console shows a CSP error.
+                    - cell:
+                      - combobox:
+                        - generic: In progress
+                    - cell:
+                      - generic: High
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: AK
+                          - text: Arun Kumar
+                    - cell:
+                      - time: Nov 20
+                    - cell:
+                      - button [expanded]
+                  - row:
+                    - cell:
+                      - paragraph: Crash when uploading an avatar larger than 5 MB
+                      - paragraph: Server returns 500 instead of a friendly size error.
+                    - cell:
+                      - combobox:
+                        - generic: In progress
+                    - cell:
+                      - generic: High
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: MR
+                          - text: Meera Raman
+                    - cell:
+                      - time: Nov 19
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Fix password reset email link expiry
+                      - paragraph: Reset links expire immediately for users in UTC+ time zones.
+                    - cell:
+                      - combobox:
+                        - generic: In progress
+                    - cell:
+                      - generic: High
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: SL
+                          - text: Sam Lee
+                    - cell:
+                      - time: Nov 19
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Checkout total ignores discount codes
+                      - paragraph: Applying SAVE10 shows the discount but charges the full price.
+                    - cell:
+                      - combobox:
+                        - generic: To do
+                    - cell:
+                      - generic: High
+                    - cell:
+                      - combobox:
+                        - generic: Unassigned
+                    - cell:
+                      - time: Nov 18
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Add CSV export to monthly reports
+                      - paragraph: Finance needs the totals per team as a download.
+                    - cell:
+                      - combobox:
+                        - generic: In progress
+                    - cell:
+                      - generic: Medium
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: AK
+                          - text: Arun Kumar
+                    - cell:
+                      - time: Nov 18
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Dark mode contrast on settings page
+                      - paragraph: Secondary text fails WCAG AA on the dark theme.
+                    - cell:
+                      - combobox:
+                        - generic: To do
+                    - cell:
+                      - generic: Medium
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: MR
+                          - text: Meera Raman
+                    - cell:
+                      - time: Nov 17
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Paginate the audit log API
+                      - paragraph: The endpoint returns 40k rows and times out.
+                    - cell:
+                      - combobox:
+                        - generic: To do
+                    - cell:
+                      - generic: Medium
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: SL
+                          - text: Sam Lee
+                    - cell:
+                      - time: Nov 17
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Write release notes for v1.2
+                    - cell:
+                      - combobox:
+                        - generic: To do
+                    - cell:
+                      - generic: Low
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: JT
+                          - text: Jo Taylor
+                    - cell:
+                      - time: Nov 17
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Rate-limit the public signup endpoint
+                      - paragraph: Bots created 3k accounts last night.
+                    - cell:
+                      - combobox:
+                        - generic: Done
+                    - cell:
+                      - generic: High
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: AK
+                          - text: Arun Kumar
+                    - cell:
+                      - time: Nov 16
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Update onboarding copy for the new pricing page
+                    - cell:
+                      - combobox:
+                        - generic: Done
+                    - cell:
+                      - generic: Low
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: MR
+                          - text: Meera Raman
+                    - cell:
+                      - time: Nov 15
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Migrate image storage to the new bucket
+                      - paragraph: Old bucket is read-only from Dec 1.
+                    - cell:
+                      - combobox:
+                        - generic: In progress
+                    - cell:
+                      - generic: Medium
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: PS
+                          - text: Priya Sharma
+                    - cell:
+                      - time: Nov 14
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Search results ignore accented characters
+                      - paragraph: Searching 'resume' does not find 'résumé'.
+                    - cell:
+                      - combobox:
+                        - generic: To do
+                    - cell:
+                      - generic: Medium
+                    - cell:
+                      - combobox:
+                        - generic: Unassigned
+                    - cell:
+                      - time: Nov 14
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Add empty state to the projects page
+                    - cell:
+                      - combobox:
+                        - generic: Done
+                    - cell:
+                      - generic: Low
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: SL
+                          - text: Sam Lee
+                    - cell:
+                      - time: Nov 13
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: "Flaky test: payments webhook retries"
+                      - paragraph: Fails about 1 in 20 runs on CI.
+                    - cell:
+                      - combobox:
+                        - generic: To do
+                    - cell:
+                      - generic: Medium
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: DO
+                          - text: Daniel Okafor
+                          - generic: (inactive)
+                    - cell:
+                      - time: Nov 13
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Keyboard trap in the date picker
+                      - paragraph: Tab cannot leave the calendar popup.
+                    - cell:
+                      - combobox:
+                        - generic: To do
+                    - cell:
+                      - generic: High
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: MR
+                          - text: Meera Raman
+                    - cell:
+                      - time: Nov 12
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Upgrade Node to 24 on build servers
+                    - cell:
+                      - combobox:
+                        - generic: Done
+                    - cell:
+                      - generic: Medium
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: PS
+                          - text: Priya Sharma
+                    - cell:
+                      - time: Nov 11
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Notification emails sent twice
+                      - paragraph: Users get duplicate 'task assigned' emails.
+                    - cell:
+                      - combobox:
+                        - generic: In progress
+                    - cell:
+                      - generic: Medium
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: SL
+                          - text: Sam Lee
+                    - cell:
+                      - time: Nov 11
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Document the API error format
+                    - cell:
+                      - combobox:
+                        - generic: Done
+                    - cell:
+                      - generic: Low
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: JT
+                          - text: Jo Taylor
+                    - cell:
+                      - time: Nov 10
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Slow dashboard query for large teams
+                      - paragraph: p95 is 2.4 s for teams over 200 people.
+                    - cell:
+                      - combobox:
+                        - generic: To do
+                    - cell:
+                      - generic: Medium
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: AK
+                          - text: Arun Kumar
+                    - cell:
+                      - time: Nov 9
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Add SSO configuration guide
+                    - cell:
+                      - combobox:
+                        - generic: To do
+                    - cell:
+                      - generic: Low
+                    - cell:
+                      - combobox:
+                        - generic: Unassigned
+                    - cell:
+                      - time: Nov 8
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Broken link in the footer
+                    - cell:
+                      - combobox:
+                        - generic: Done
+                    - cell:
+                      - generic: Low
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: AK
+                          - text: Arun Kumar
+                    - cell:
+                      - time: Nov 8
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Timezone shown wrong on invoices
+                      - paragraph: Invoices show UTC instead of the account time zone.
+                    - cell:
+                      - combobox:
+                        - generic: Done
+                    - cell:
+                      - generic: Medium
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: MR
+                          - text: Meera Raman
+                    - cell:
+                      - time: Nov 7
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Remove unused feature flags
+                    - cell:
+                      - combobox:
+                        - generic: To do
+                    - cell:
+                      - generic: Low
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: PS
+                          - text: Priya Sharma
+                    - cell:
+                      - time: Nov 6
+                    - cell:
+                      - button
+                  - row:
+                    - cell:
+                      - paragraph: Mobile menu overlaps the page title
+                      - paragraph: On 360px screens the menu covers the H1.
+                    - cell:
+                      - combobox:
+                        - generic: Done
+                    - cell:
+                      - generic: Medium
+                    - cell:
+                      - combobox:
+                        - generic:
+                          - generic [aria-hidden]: SL
+                          - text: Sam Lee
+                    - cell:
+                      - time: Nov 5
+                    - cell:
+                      - button
+    - region "Notifications alt+T"
+  - menu "Actions for \"Login button unresponsive on Safari\"" [active] [ref=f32e544]:
+    - menuitem "Change assignee" [ref=f32e545]
+    - separator [ref=f32e546]
+    - menuitem "Delete" [ref=f32e547]
