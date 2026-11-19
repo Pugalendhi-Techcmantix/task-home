@@ -1,55 +1,190 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
 
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+@custom-variant dark (&:is(.dark *));
 
-  /* Brand accent (teal). 700 is the default for filled buttons: white text passes WCAG AA. */
-  --color-brand-50: #f0fdfa;
-  --color-brand-100: #ccfbf1;
-  --color-brand-500: #14b8a6;
-  --color-brand-600: #0d9488;
-  --color-brand-700: #0f766e;
-  --color-brand-800: #115e59;
+/*
+ * Design tokens: the reference visual language (see docs/superpowers/specs/2026-11-20-full-app-design.md).
+ * shadcn's variable names are mapped onto it; extra semantic colors (good/warn/bad/sky/violet, brand)
+ * are added for pills, KPI edges and meters.
+ */
+:root {
+  --background: #f5f7f8;
+  --foreground: #101a20;
+  --card: #ffffff;
+  --card-foreground: #101a20;
+  --popover: #ffffff;
+  --popover-foreground: #101a20;
+  --primary: #101a20;
+  --primary-foreground: #ffffff;
+  --secondary: #f0f3f5;
+  --secondary-foreground: #101a20;
+  --muted: #f0f3f5;
+  --muted-foreground: #5d6b75;
+  --faint: #8a97a0;
+  --accent: #eef2f4;
+  --accent-foreground: #101a20;
+  --destructive: #c03d10;
+  --border: #e1e6ea;
+  --input: #d3dadf;
+  --ring: #0d7a6b;
+  --radius: 0.625rem;
 
-  --animate-toast-in: toast-in 160ms ease-out;
-  --animate-drawer-in: drawer-in 220ms cubic-bezier(0.32, 0.72, 0, 1);
-  --animate-fade-in: fade-in 150ms ease-out;
+  --brand: #0d7a6b;
+  --brand-soft: #e0f1ed;
+  --good: #1b8a4c;
+  --good-soft: #e2f4e9;
+  --warn: #a96f12;
+  --warn-soft: #fbf0da;
+  --bad: #c03d10;
+  --bad-soft: #fde6dc;
+  --sky: #2c6a99;
+  --sky-soft: #e3edf6;
+  --violet: #6d4bb0;
+  --violet-soft: #eee8f8;
 
-  @keyframes toast-in {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  @keyframes drawer-in {
-    from {
-      transform: translateX(100%);
-    }
-    to {
-      transform: translateX(0);
-    }
-  }
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
+  --sidebar: #ffffff;
+  --sidebar-foreground: #5d6b75;
+  --sidebar-primary: #101a20;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eef2f4;
+  --sidebar-accent-foreground: #101a20;
+  --sidebar-border: #e1e6ea;
+  --sidebar-ring: #0d7a6b;
+
+  --shadow-card: 0 1px 2px rgb(16 26 32 / 0.05), 0 6px 20px rgb(16 26 32 / 0.08);
+}
+
+.dark {
+  --background: #0c1216;
+  --foreground: #e4ebef;
+  --card: #121a20;
+  --card-foreground: #e4ebef;
+  --popover: #121a20;
+  --popover-foreground: #e4ebef;
+  --primary: #e4ebef;
+  --primary-foreground: #0c1216;
+  --secondary: #172128;
+  --secondary-foreground: #e4ebef;
+  --muted: #172128;
+  --muted-foreground: #93a3ad;
+  --faint: #6c7c86;
+  --accent: #1b262e;
+  --accent-foreground: #e4ebef;
+  --destructive: #f0845c;
+  --border: #222e36;
+  --input: #2c3a43;
+  --ring: #36bfa8;
+
+  --brand: #36bfa8;
+  --brand-soft: #11302b;
+  --good: #4cc982;
+  --good-soft: #12301f;
+  --warn: #e6b24f;
+  --warn-soft: #33280f;
+  --bad: #f0845c;
+  --bad-soft: #381b11;
+  --sky: #80b6df;
+  --sky-soft: #142838;
+  --violet: #b39af0;
+  --violet-soft: #261e3a;
+
+  --sidebar: #121a20;
+  --sidebar-foreground: #93a3ad;
+  --sidebar-primary: #e4ebef;
+  --sidebar-primary-foreground: #0c1216;
+  --sidebar-accent: #1b262e;
+  --sidebar-accent-foreground: #e4ebef;
+  --sidebar-border: #222e36;
+  --sidebar-ring: #36bfa8;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 20px rgb(0 0 0 / 0.35);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-heading: var(--font-sans);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-good: var(--good);
+  --color-good-soft: var(--good-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-sky: var(--sky);
+  --color-sky-soft: var(--sky-soft);
+  --color-violet: var(--violet);
+  --color-violet-soft: var(--violet-soft);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --shadow-card: var(--shadow-card);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
 }
 
 @layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    @apply font-sans;
   }
   body {
-    @apply bg-slate-50 text-slate-900;
+    @apply bg-background text-foreground;
+    font-feature-settings: "tnum" 0;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@keyframes row-flash {
+  0%,
+  60% {
+    box-shadow: inset 0 0 0 2px var(--brand);
+    background-color: var(--brand-soft);
+  }
+  100% {
+    box-shadow: inset 0 0 0 0 transparent;
   }
 }
 
