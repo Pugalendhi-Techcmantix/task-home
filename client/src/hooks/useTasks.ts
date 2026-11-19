@@ -31,6 +31,13 @@ function messageFor(error: unknown): string {
   return "Something went wrong. Please try again.";
 }
 
+function matchesFilters(task: Task, filters: TaskQuery): boolean {
+  return (
+    (filters.status === undefined || filters.status === task.status) &&
+    (filters.priority === undefined || filters.priority === task.priority)
+  );
+}
+
 /** Owns the task list: server-side filtering, loading/error state and mutations. */
 export function useTasks(): UseTasksResult {
   const toast = useToast();
@@ -86,16 +93,22 @@ export function useTasks(): UseTasksResult {
   const create = useCallback(
     async (input: CreateTaskInput): Promise<Task> => {
       const task = await createTask(input);
-      toast.success("Task created");
+      toast.success(
+        matchesFilters(task, filters)
+          ? "Task created"
+          : "Task created. It's hidden by the current filters.",
+      );
       reload();
       return task;
     },
-    [toast, reload],
+    [toast, reload, filters],
   );
 
   const changeStatus = useCallback(
     async (id: string, status: TaskStatus): Promise<void> => {
       markPending(id, true);
+      // Show the chosen status right away; the refetch in `finally` corrects it if the save fails.
+      setTasks((current) => current.map((task) => (task.id === id ? { ...task, status } : task)));
       try {
         const updated = await updateTask(id, { status });
         setTasks((current) => current.map((task) => (task.id === id ? updated : task)));

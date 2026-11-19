@@ -75,13 +75,14 @@ npm run dev          # API on http://localhost:4000 + UI on http://localhost:517
 npm run dev:memory   # same, but with a temporary in-memory MongoDB (no setup; data resets on restart)
 ```
 
-Open http://localhost:5173. Vite proxies `/api` to the API, so the UI needs no configuration.
+Open http://localhost:5173. Vite proxies `/api` to the API on the same `PORT` (read from the shell or
+`server/.env`), so the UI needs no configuration.
 Press <kbd>N</kbd> anywhere on the page to open the "New task" panel.
 
 ## Tests and checks
 
 ```bash
-npm test             # API + schema tests (Vitest)
+npm test             # API, schema and client API-module tests (Vitest)
 npm run typecheck    # tsc --noEmit for every workspace
 npm run lint         # ESLint (type-aware)
 npm run build        # production build of the UI
@@ -127,16 +128,18 @@ Every error has the same shape:
 
 ## Trade-offs (3-hour time box)
 
-1. **Refetch after every change instead of optimistic updates or a cache library.** After a status
-   change or delete, the UI applies the server's response to the row, then refetches the list. That
-   costs one extra request, but the list always matches the server-side filters. For example, a task
-   moved to "Done" leaves a "To do" view, with no client-side filter logic to keep in sync. A library
-   like TanStack Query would add caching and optimistic updates, but also more code to explain.
-2. **No frontend automated tests.** The brief asks for API tests, so the time went into those plus
-   strict typing. Every UI flow was checked by hand in a real browser (Playwright) at desktop and
-   phone width: create, validation errors, filters, status change, delete, empty, loading and error
-   states, keyboard-only use. Next step: React Testing Library tests for the form, plus a Playwright
-   end-to-end run in CI.
+1. **Refetch after every change instead of a cache library.** A status change shows in the row right
+   away, and the list is refetched after every create, update or delete. If a save fails, the refetch
+   puts the row back. That costs one extra request, but the list always matches the server-side
+   filters. For example, a task moved to "Done" leaves a "To do" view, with no client-side filter logic
+   to keep in sync. A library like TanStack Query would add caching and finer-grained updates, but
+   also more code to explain.
+2. **Few frontend automated tests.** The brief asks for API tests, so the time went into those plus
+   strict typing. On the client, only the API module has unit tests (aborts, unexpected responses).
+   Every UI flow was checked by hand in a real browser (Playwright) at desktop and phone width:
+   create, validation errors, filters, status change, delete, empty, loading and error states,
+   keyboard-only use, reduced motion. Next step: React Testing Library tests for the form, plus a
+   Playwright end-to-end run in CI.
 
 Smaller choices:
 - The shared package is consumed as TypeScript source, and the API runs through `tsx`. There's no
