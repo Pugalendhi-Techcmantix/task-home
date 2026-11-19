@@ -1,17 +1,50 @@
+import type { CreateTaskInput } from "@tracker/shared";
 import { Plus } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { AppHeader } from "./components/AppHeader";
+import { NewTaskDrawer } from "./components/NewTaskDrawer";
 import { TaskTable } from "./components/TaskTable";
 import { EmptyState, ErrorState, SkeletonRows } from "./components/TaskStates";
 import { TaskToolbar } from "./components/TaskToolbar";
 import { ToastProvider } from "./components/toast/ToastProvider";
 import { useTasks } from "./hooks/useTasks";
+import { buttonPrimary } from "./lib/styles";
+
+function isTypingTarget(target: EventTarget | null): boolean {
+  return (
+    target instanceof HTMLElement &&
+    (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
+  );
+}
 
 function TasksPage() {
-  const { tasks, state, error, refreshing, filters, setFilters, reload, changeStatus, remove, pendingIds } =
+  const { tasks, state, error, refreshing, filters, setFilters, reload, create, changeStatus, remove, pendingIds } =
     useTasks();
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const filtered = filters.status !== undefined || filters.priority !== undefined;
-  const clearFilters = () => setFilters({});
-  const openCreate = () => undefined;
+
+  const clearFilters = useCallback(() => setFilters({}), [setFilters]);
+  const openCreate = useCallback(() => setDrawerOpen(true), []);
+  const closeCreate = useCallback(() => setDrawerOpen(false), []);
+  const handleCreate = useCallback(
+    async (input: CreateTaskInput) => {
+      await create(input);
+      setDrawerOpen(false);
+    },
+    [create],
+  );
+
+  // Keyboard shortcut: "N" opens the create panel (ignored while typing in a field).
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent): void {
+      if (event.key.toLowerCase() !== "n" || event.metaKey || event.ctrlKey || event.altKey) return;
+      if (isTypingTarget(event.target)) return;
+      event.preventDefault();
+      setDrawerOpen(true);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
@@ -20,14 +53,15 @@ function TasksPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Tasks</h1>
           <p className="mt-1 text-sm text-slate-500">Log, filter and update your team&apos;s tasks and bugs.</p>
         </div>
-        <button
-          type="button"
-          disabled
-          onClick={openCreate}
-          className="inline-flex h-10 items-center gap-2 rounded-lg bg-brand-700 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-800 focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
-        >
+        <button type="button" onClick={openCreate} className={buttonPrimary} aria-keyshortcuts="N">
           <Plus className="size-4" aria-hidden="true" />
           New task
+          <kbd
+            className="ml-1 hidden rounded border border-white/30 px-1.5 font-sans text-[11px] font-medium text-white/80 sm:inline"
+            aria-hidden="true"
+          >
+            N
+          </kbd>
         </button>
       </div>
 
@@ -56,6 +90,8 @@ function TasksPage() {
           />
         )}
       </section>
+
+      <NewTaskDrawer open={drawerOpen} onClose={closeCreate} onCreate={handleCreate} />
     </main>
   );
 }

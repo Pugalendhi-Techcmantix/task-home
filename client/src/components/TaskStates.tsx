@@ -1,5 +1,6 @@
 import { CloudOff, ListChecks, Plus, RotateCw, SearchX, X } from "lucide-react";
 import type { ReactNode } from "react";
+import { buttonPrimary, buttonSecondary } from "../lib/styles";
 
 export function SkeletonRows({ rows = 5 }: { rows?: number }) {
   return (
@@ -31,10 +32,8 @@ function StateFrame({ icon, title, body, action }: { icon: ReactNode; title: str
   );
 }
 
-const secondaryButton =
-  "inline-flex h-9 items-center gap-2 rounded-lg border border-slate-300 bg-white px-3.5 text-sm font-medium text-slate-700 shadow-xs transition-colors hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:outline-none";
-const primaryButton =
-  "inline-flex h-9 items-center gap-2 rounded-lg bg-brand-700 px-3.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-800 focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:outline-none";
+const secondaryButton = buttonSecondary;
+const primaryButton = buttonPrimary;
 
 interface EmptyStateProps {
   /** True when filters are active, so the empty list means "no matches", not "no tasks". */
