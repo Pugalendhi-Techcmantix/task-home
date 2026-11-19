@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { objectIdString } from "./ids";
 
 export const TASK_STATUSES = ["todo", "in_progress", "done"] as const;
 export const TASK_PRIORITIES = ["low", "medium", "high"] as const;
@@ -41,6 +42,7 @@ export const createTaskSchema = z.strictObject({
   description: descriptionSchema,
   status: statusSchema.optional(),
   priority: prioritySchema.optional(),
+  assigneeId: objectIdString("Choose a valid team member").optional(),
 });
 
 /** Body of PATCH /api/tasks/:id. Only status and priority may change. */
@@ -57,6 +59,16 @@ export const updateTaskSchema = z
 export const taskQuerySchema = z.object({
   status: statusSchema.optional(),
   priority: prioritySchema.optional(),
+  assigneeId: z
+    .union([objectIdString(), z.literal("unassigned")], {
+      error: "Assignee must be a member id or 'unassigned'",
+    })
+    .optional(),
+});
+
+/** Body of PATCH /api/tasks/:id/assignee. `null` unassigns. */
+export const assignTaskSchema = z.strictObject({
+  assigneeId: objectIdString("Choose a valid team member").nullable(),
 });
 
 /** A task as returned by the API. */
@@ -66,6 +78,8 @@ export const taskSchema = z.object({
   description: z.string().optional(),
   status: statusSchema,
   priority: prioritySchema,
+  assigneeId: z.string().optional(),
+  completedAt: z.iso.datetime().optional(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });
@@ -91,6 +105,7 @@ export type CreateTaskInput = z.input<typeof createTaskSchema>;
 export type CreateTaskData = z.output<typeof createTaskSchema>;
 export type UpdateTaskInput = z.input<typeof updateTaskSchema>;
 export type TaskQuery = z.infer<typeof taskQuerySchema>;
+export type AssignTaskInput = z.infer<typeof assignTaskSchema>;
 export type FieldError = z.infer<typeof fieldErrorSchema>;
 export type ApiErrorBody = z.infer<typeof apiErrorSchema>;
 export type DeleteTaskResponse = z.infer<typeof deleteTaskResponseSchema>;

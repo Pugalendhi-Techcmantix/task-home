@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createTaskSchema, taskQuerySchema, updateTaskSchema } from "./index";
+import { assignTaskSchema, createTaskSchema, taskQuerySchema, updateTaskSchema } from "./index";
 
 describe("createTaskSchema", () => {
   it("accepts a minimal valid task without adding defaults", () => {
@@ -92,5 +92,28 @@ describe("taskQuerySchema", () => {
 
   it("rejects an invalid filter value", () => {
     expect(taskQuerySchema.safeParse({ status: "closed" }).success).toBe(false);
+  });
+});
+
+describe("assignment (v2)", () => {
+  const memberId = "6aff321532ed457326852fdd";
+
+  it("createTaskSchema accepts a 24-hex assigneeId and rejects 'abc'", () => {
+    expect(createTaskSchema.parse({ title: "abc", assigneeId: memberId }).assigneeId).toBe(memberId);
+    const result = createTaskSchema.safeParse({ title: "abc", assigneeId: "abc" });
+    expect(result.error?.issues[0]?.path).toEqual(["assigneeId"]);
+    expect(result.error?.issues[0]?.message).toBe("Choose a valid team member");
+  });
+
+  it("taskQuerySchema accepts 'unassigned' and an object id, rejects 'nobody'", () => {
+    expect(taskQuerySchema.parse({ assigneeId: "unassigned" })).toEqual({ assigneeId: "unassigned" });
+    expect(taskQuerySchema.parse({ assigneeId: memberId })).toEqual({ assigneeId: memberId });
+    expect(taskQuerySchema.safeParse({ assigneeId: "nobody" }).success).toBe(false);
+  });
+
+  it("assignTaskSchema accepts null and an id, rejects a missing key", () => {
+    expect(assignTaskSchema.parse({ assigneeId: null })).toEqual({ assigneeId: null });
+    expect(assignTaskSchema.parse({ assigneeId: memberId })).toEqual({ assigneeId: memberId });
+    expect(assignTaskSchema.safeParse({}).success).toBe(false);
   });
 });
