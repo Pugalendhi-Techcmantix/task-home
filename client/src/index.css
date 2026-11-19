@@ -58,6 +58,7 @@
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important; /* stops infinite pulse/spin from strobing */
     transition-duration: 0.01ms !important;
   }
 }
