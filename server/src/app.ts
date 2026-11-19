@@ -2,6 +2,7 @@ import cors from "cors";
 import express, { type Express } from "express";
 import { errorHandler } from "./middleware/errorHandler";
 import { notFound } from "./middleware/notFound";
+import { dashboardRouter } from "./routes/dashboard.routes";
 import { memberRouter } from "./routes/member.routes";
 import { taskRouter } from "./routes/task.routes";
 
@@ -15,6 +16,7 @@ export function createApp(): Express {
 
   app.use("/api/tasks", taskRouter);
   app.use("/api/members", memberRouter);
+  app.use("/api/dashboard", dashboardRouter);
 
   app.use(notFound);
   app.use(errorHandler);

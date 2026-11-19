@@ -5,24 +5,14 @@ import {
   type UpdateMemberInput,
 } from "@tracker/shared";
 import type { Request, Response } from "express";
-import type { Types } from "mongoose";
 import { HttpError } from "../lib/httpError";
 import { parseObjectIdOr404 } from "../lib/ids";
 import { MemberModel, toMemberDto, type MemberRecord } from "../models/member.model";
-import { TaskModel } from "../models/task.model";
+import { countOpenTasksByAssignee } from "../lib/taskCounts";
 
 type MemberIdParams = { id: string };
 
 const MEMBER_NOT_FOUND = "Member not found";
-
-/** Open (not done) task counts per assignee id. */
-export async function countOpenTasksByAssignee(ids: Types.ObjectId[]): Promise<Map<string, number>> {
-  const rows = await TaskModel.aggregate<{ _id: Types.ObjectId; count: number }>([
-    { $match: { assigneeId: { $in: ids }, status: { $ne: "done" } } },
-    { $group: { _id: "$assigneeId", count: { $sum: 1 } } },
-  ]);
-  return new Map(rows.map((row) => [row._id.toString(), row.count]));
-}
 
 async function toDtos(records: MemberRecord[]) {
   const counts = await countOpenTasksByAssignee(records.map((record) => record._id));
