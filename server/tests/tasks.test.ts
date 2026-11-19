@@ -1,4 +1,5 @@
-import { apiErrorSchema, taskSchema } from "@tracker/shared";
+import { apiErrorSchema, deleteTaskResponseSchema, taskSchema } from "@tracker/shared";
+import { Types } from "mongoose";
 import request from "supertest";
 import { describe, expect, it } from "vitest";
 import { TaskModel } from "../src/models/task.model";
@@ -101,5 +102,80 @@ describe("unknown routes", () => {
     const res = await request(app).get("/api/nope");
     expect(res.status).toBe(404);
     expect(apiErrorSchema.parse(res.body as unknown).message).toBe("Route not found");
+  });
+});
+
+describe("PATCH /api/tasks/:id", () => {
+  it("updates status and persists it", async () => {
+    const created = await createViaApi({ title: "Ship it" });
+
+    const res = await request(app).patch(`/api/tasks/${created.id}`).send({ status: "in_progress" });
+
+    expect(res.status).toBe(200);
+    const updated = taskSchema.parse(res.body as unknown);
+    expect(updated).toMatchObject({ id: created.id, title: "Ship it", status: "in_progress", priority: "medium" });
+    const stored = await TaskModel.findById(created.id).lean();
+    expect(stored?.status).toBe("in_progress");
+  });
+
+  it("updates priority", async () => {
+    const created = await createViaApi({ title: "Ship it" });
+
+    const res = await request(app).patch(`/api/tasks/${created.id}`).send({ priority: "high" });
+
+    expect(res.status).toBe(200);
+    expect(taskSchema.parse(res.body as unknown).priority).toBe("high");
+  });
+
+  it("returns 404 for an unknown id", async () => {
+    const res = await request(app)
+      .patch(`/api/tasks/${new Types.ObjectId().toString()}`)
+      .send({ status: "done" });
+
+    expect(res.status).toBe(404);
+    expect(apiErrorSchema.parse(res.body as unknown).message).toBe("Task not found");
+  });
+
+  it("returns 404 for a malformed id", async () => {
+    const res = await request(app).patch("/api/tasks/not-an-id").send({ status: "done" });
+
+    expect(res.status).toBe(404);
+    expect(apiErrorSchema.parse(res.body as unknown).message).toBe("Task not found");
+  });
+
+  it.each([[{}], [{ title: "Renamed" }], [{ status: "closed" }]])(
+    "returns 400 for body %j and leaves the task unchanged",
+    async (payload) => {
+      const created = await createViaApi({ title: "Ship it" });
+
+      const res = await request(app).patch(`/api/tasks/${created.id}`).send(payload);
+
+      expect(res.status).toBe(400);
+      expect(apiErrorSchema.parse(res.body as unknown).message).toBe("Validation failed");
+      const stored = await TaskModel.findById(created.id).lean();
+      expect(stored).toMatchObject({ title: "Ship it", status: "todo" });
+    },
+  );
+});
+
+describe("DELETE /api/tasks/:id", () => {
+  it("deletes the task and confirms with its id", async () => {
+    const created = await createViaApi({ title: "Remove me" });
+
+    const res = await request(app).delete(`/api/tasks/${created.id}`);
+
+    expect(res.status).toBe(200);
+    expect(deleteTaskResponseSchema.parse(res.body as unknown)).toEqual({
+      message: "Task deleted",
+      id: created.id,
+    });
+    expect(await TaskModel.countDocuments()).toBe(0);
+  });
+
+  it.each([[new Types.ObjectId().toString()], ["not-an-id"]])("returns 404 for id %s", async (id) => {
+    const res = await request(app).delete(`/api/tasks/${id}`);
+
+    expect(res.status).toBe(404);
+    expect(apiErrorSchema.parse(res.body as unknown).message).toBe("Task not found");
   });
 });
