@@ -10,8 +10,8 @@ interface Toast {
 }
 
 export interface ToastApi {
-  success(message: string): void;
-  error(message: string): void;
+  success: (message: string) => void;
+  error: (message: string) => void;
 }
 
 const ToastContext = createContext<ToastApi | null>(null);
