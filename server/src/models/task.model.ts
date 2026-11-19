@@ -49,6 +49,8 @@ export function toTaskDto(record: TaskRecord): Task {
     ...(record.description ? { description: record.description } : {}),
     status: record.status,
     priority: record.priority,
+    ...(record.assigneeId ? { assigneeId: record.assigneeId.toString() } : {}),
+    ...(record.completedAt ? { completedAt: record.completedAt.toISOString() } : {}),
     createdAt: record.createdAt.toISOString(),
     updatedAt: record.updatedAt.toISOString(),
   };
