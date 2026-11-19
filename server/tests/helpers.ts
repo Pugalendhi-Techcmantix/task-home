@@ -1,4 +1,4 @@
-import { taskSchema, type Task, type TaskQuery } from "@tracker/shared";
+import { memberSchema, taskSchema, type Member, type Task, type TaskQuery } from "@tracker/shared";
 import request from "supertest";
 import { expect } from "vitest";
 import { createApp } from "../src/app";
@@ -17,4 +17,11 @@ export async function listViaApi(query: TaskQuery = {}): Promise<Task[]> {
   const res = await request(app).get("/api/tasks").query(query);
   expect(res.status).toBe(200);
   return taskSchema.array().parse(res.body as unknown);
+}
+
+/** POSTs a member through the API and returns the parsed response. */
+export async function createMemberViaApi(payload: Record<string, unknown>): Promise<Member> {
+  const res = await request(app).post("/api/members").send(payload);
+  expect(res.status).toBe(201);
+  return memberSchema.parse(res.body as unknown);
 }

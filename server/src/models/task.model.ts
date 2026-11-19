@@ -18,6 +18,8 @@ export interface TaskDoc {
   description?: string;
   status: TaskStatus;
   priority: TaskPriority;
+  assigneeId?: Types.ObjectId | null;
+  completedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -31,6 +33,8 @@ const taskMongooseSchema = new Schema<TaskDoc>(
     description: { type: String, trim: true, maxlength: DESCRIPTION_MAX },
     status: { type: String, enum: [...TASK_STATUSES], default: DEFAULT_STATUS, required: true },
     priority: { type: String, enum: [...TASK_PRIORITIES], default: DEFAULT_PRIORITY, required: true },
+    assigneeId: { type: Schema.Types.ObjectId, ref: "Member", default: null },
+    completedAt: { type: Date, default: null },
   },
   { timestamps: true },
 );

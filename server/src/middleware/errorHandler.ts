@@ -26,7 +26,8 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
   }
 
   if (err instanceof HttpError) {
-    res.status(err.status).json({ message: err.message } satisfies ApiErrorBody);
+    const body: ApiErrorBody = err.errors ? { message: err.message, errors: err.errors } : { message: err.message };
+    res.status(err.status).json(body);
     return;
   }
 
