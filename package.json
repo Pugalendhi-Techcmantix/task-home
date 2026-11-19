@@ -17,7 +17,8 @@
     "test": "vitest run",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "eslint .",
-    "build": "npm run build -w client"
+    "build": "npm run build -w client",
+    "seed": "npm run seed -w server --"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
