@@ -47,13 +47,14 @@ export function useTasks(): UseTasksResult {
     const controller = new AbortController();
     fetchTasks(filters, controller.signal).then(
       (data) => {
+        if (controller.signal.aborted) return; // a newer request owns the state now
         setTasks(data);
         setError(null);
         setState("ready");
         setRefreshing(false);
       },
       (err: unknown) => {
-        if (isAbortError(err)) return;
+        if (controller.signal.aborted || isAbortError(err)) return;
         setError(messageFor(err));
         setState("error");
         setRefreshing(false);

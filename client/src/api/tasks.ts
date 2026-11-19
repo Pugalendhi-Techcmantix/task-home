@@ -45,7 +45,10 @@ async function request<T>(path: string, init: RequestInit, schema: z.ZodType<T>)
     throw new ApiError(0, NETWORK_ERROR_MESSAGE);
   }
 
-  const body: unknown = await res.json().catch(() => undefined);
+  const body: unknown = await res.json().catch((error: unknown) => {
+    if (isAbortError(error)) throw error; // aborted mid-body: let the caller ignore it
+    return undefined; // empty or non-JSON body
+  });
 
   if (!res.ok) {
     const parsed = apiErrorSchema.safeParse(body);
@@ -59,7 +62,11 @@ async function request<T>(path: string, init: RequestInit, schema: z.ZodType<T>)
     );
   }
 
-  return schema.parse(body);
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) {
+    throw new ApiError(res.status, "Unexpected response from the server");
+  }
+  return parsed.data;
 }
 
 export function fetchTasks(query: TaskQuery, signal?: AbortSignal): Promise<Task[]> {
