@@ -10,6 +10,16 @@ const envSchema = z.object({
   MONGODB_URI: z
     .string({ error: "MONGODB_URI is required (see server/.env.example)" })
     .regex(/^mongodb(\+srv)?:\/\//, { error: "MONGODB_URI must start with mongodb:// or mongodb+srv://" }),
+  /** Comma-separated browser origins allowed by CORS. Unset: allow all (local dev). */
+  CORS_ORIGINS: z
+    .string()
+    .optional()
+    .transform((value) =>
+      value
+        ?.split(",")
+        .map((origin) => origin.trim())
+        .filter(Boolean),
+    ),
 });
 
 export type Env = z.infer<typeof envSchema>;

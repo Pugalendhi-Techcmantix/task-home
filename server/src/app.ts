@@ -6,12 +6,17 @@ import { dashboardRouter } from "./routes/dashboard.routes";
 import { memberRouter } from "./routes/member.routes";
 import { taskRouter } from "./routes/task.routes";
 
+export interface AppOptions {
+  /** Browser origins allowed to call the API. Omitted: open to all (local development). */
+  corsOrigins?: string[];
+}
+
 /** Builds the Express app without listening, so tests can drive it with Supertest. */
-export function createApp(): Express {
+export function createApp({ corsOrigins }: AppOptions = {}): Express {
   const app = express();
 
   app.disable("x-powered-by");
-  app.use(cors());
+  app.use(corsOrigins ? cors({ origin: corsOrigins }) : cors());
   app.use(express.json({ limit: "10kb" }));
 
   app.use("/api/tasks", taskRouter);
