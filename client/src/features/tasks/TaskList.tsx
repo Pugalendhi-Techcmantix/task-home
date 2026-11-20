@@ -11,6 +11,7 @@ export interface TaskListHandlers {
   onStatusChange: (task: Task, status: TaskStatus) => void;
   onAssign: (task: Task, assigneeId: string | null) => void;
   onDelete: (task: Task) => void;
+  onEdit: (task: Task) => void;
 }
 
 interface TaskListProps extends TaskListHandlers {
@@ -49,7 +50,7 @@ function CreatedAt({ iso }: { iso: string }) {
 
 const highlightClass = "animate-[row-flash_2.2s_ease-out_1]";
 
-export function TaskList({ tasks, members, membersById, highlightId, onStatusChange, onAssign, onDelete }: TaskListProps) {
+export function TaskList({ tasks, members, membersById, highlightId, onStatusChange, onAssign, onDelete, onEdit }: TaskListProps) {
   const assignee = useAssigneeFocus();
   const currentOf = (task: Task) => (task.assigneeId ? membersById.get(task.assigneeId) : undefined);
 
@@ -100,7 +101,7 @@ export function TaskList({ tasks, members, membersById, highlightId, onStatusCha
                 <CreatedAt iso={task.createdAt} />
               </TableCell>
               <TableCell className="pr-4 text-right">
-                <RowMenu task={task} onChangeAssignee={() => assignee.open(task.id)} onDelete={() => onDelete(task)} />
+                <RowMenu task={task} onEdit={() => onEdit(task)} onChangeAssignee={() => assignee.open(task.id)} onDelete={() => onDelete(task)} />
               </TableCell>
             </TableRow>
           ))}
@@ -118,7 +119,7 @@ export function TaskList({ tasks, members, membersById, highlightId, onStatusCha
                   <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground [overflow-wrap:anywhere]">{task.description}</p>
                 )}
               </div>
-              <RowMenu task={task} onChangeAssignee={() => assignee.open(task.id)} onDelete={() => onDelete(task)} />
+              <RowMenu task={task} onEdit={() => onEdit(task)} onChangeAssignee={() => assignee.open(task.id)} onDelete={() => onDelete(task)} />
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <StatusSelect task={task} onChange={(status) => onStatusChange(task, status)} />

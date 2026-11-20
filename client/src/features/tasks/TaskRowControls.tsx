@@ -1,5 +1,5 @@
 import { TASK_STATUSES, type Member, type Task, type TaskStatus } from "@tracker/shared";
-import { MoreHorizontal, Trash2, UserRound } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, UserRound } from "lucide-react";
 import { useState } from "react";
 import { MemberAvatar } from "@/components/common/MemberAvatar";
 import { STATUS_TONES, TONE_CLASSES } from "@/components/common/Pill";
@@ -102,12 +102,13 @@ export function AssigneeSelect({ task, members, current, onChange, triggerId }: 
 
 interface RowMenuProps {
   task: Task;
+  onEdit: () => void;
   onChangeAssignee: () => void;
   onDelete: () => void;
 }
 
-/** ⋯ menu with "Change assignee" and a confirmed "Delete". */
-export function RowMenu({ task, onChangeAssignee, onDelete }: RowMenuProps) {
+/** ⋯ menu with "Edit", "Change assignee" and a confirmed "Delete". */
+export function RowMenu({ task, onEdit, onChangeAssignee, onDelete }: RowMenuProps) {
   const [confirming, setConfirming] = useState(false);
   return (
     <>
@@ -118,6 +119,10 @@ export function RowMenu({ task, onChangeAssignee, onDelete }: RowMenuProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={onEdit}>
+            <Pencil aria-hidden="true" />
+            Edit
+          </DropdownMenuItem>
           <DropdownMenuItem onSelect={onChangeAssignee}>
             <UserRound aria-hidden="true" />
             Change assignee

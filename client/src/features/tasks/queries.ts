@@ -1,7 +1,7 @@
-import type { CreateTaskInput, Task, TaskQuery, TaskStatus } from "@tracker/shared";
+import type { CreateTaskInput, EditTaskInput, Task, TaskQuery, TaskStatus } from "@tracker/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiError, assignTask, createTask, deleteTask, fetchTasks, updateTask } from "@/api/tasks";
+import { ApiError, assignTask, createTask, deleteTask, editTask, fetchTasks, updateTask } from "@/api/tasks";
 import { queryKeys } from "@/lib/queryKeys";
 
 export function useTasks(filters: TaskQuery = {}) {
@@ -57,6 +57,15 @@ export function useUpdateTaskStatus() {
       toast.error(taskErrorMessage(error));
     },
     onSuccess: () => toast.success("Status updated"),
+    onSettled: invalidate,
+  });
+}
+
+/** Edits a task. Errors are left to the caller (the form maps field errors). */
+export function useEditTask() {
+  const invalidate = useInvalidateTaskData();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: EditTaskInput }) => editTask(id, input),
     onSettled: invalidate,
   });
 }

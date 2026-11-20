@@ -5,6 +5,8 @@ import {
   TASK_STATUSES,
   TITLE_MAX,
   type CreateTaskInput,
+  type Member,
+  type Task,
   type TaskPriority,
   type TaskStatus,
 } from "@tracker/shared";
@@ -32,6 +34,12 @@ interface TaskFormProps {
   /** Resolves on success. Rejects with ApiError to show server-side field errors. */
   onSubmit: (input: CreateTaskInput) => Promise<void>;
   onSubmittingChange?: (submitting: boolean) => void;
+  /** Prefills the form to edit an existing task. */
+  initial?: Task;
+  /** The task's assignee when inactive: shown as a disabled option so the current value still displays. */
+  inactiveAssignee?: Member;
+  /** The form's DOM id, so a footer button elsewhere can submit it. */
+  formId?: string;
 }
 
 function toFieldErrors(entries: { field: unknown; message: string }[]): FieldErrors {
@@ -89,18 +97,18 @@ function Counter({ value, max }: { value: number; max: number }) {
   );
 }
 
-export function TaskForm({ onSubmit, onSubmittingChange }: TaskFormProps) {
+export function TaskForm({ onSubmit, onSubmittingChange, initial, inactiveAssignee, formId = TASK_FORM_ID }: TaskFormProps) {
   const ids = { title: useId(), description: useId(), status: useId(), priority: useId(), assigneeId: useId() };
   const titleRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const submittingRef = useRef(false);
   const members = useActiveMembers();
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [status, setStatus] = useState<TaskStatus>("todo");
-  const [priority, setPriority] = useState<TaskPriority>("medium");
-  const [assignee, setAssignee] = useState<string>(UNASSIGNED);
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const [description, setDescription] = useState(initial?.description ?? "");
+  const [status, setStatus] = useState<TaskStatus>(initial?.status ?? "todo");
+  const [priority, setPriority] = useState<TaskPriority>(initial?.priority ?? "medium");
+  const [assignee, setAssignee] = useState<string>(initial?.assigneeId ?? UNASSIGNED);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -158,7 +166,7 @@ export function TaskForm({ onSubmit, onSubmittingChange }: TaskFormProps) {
         focusFirstInvalid(serverErrors);
         if (Object.keys(serverErrors).length === 0) setFormError(error.message);
       } else {
-        setFormError(error instanceof Error ? error.message : "Could not create the task. Please try again.");
+        setFormError(error instanceof Error ? error.message : "Could not save the task. Please try again.");
       }
     } finally {
       setSubmitting(false);
@@ -168,7 +176,7 @@ export function TaskForm({ onSubmit, onSubmittingChange }: TaskFormProps) {
   const describedBy = (field: FieldName) => (errors[field] ? `${ids[field]}-error` : undefined);
 
   return (
-    <form id={TASK_FORM_ID} noValidate onSubmit={(event) => void handleSubmit(event)} className="space-y-5">
+    <form id={formId} noValidate onSubmit={(event) => void handleSubmit(event)} className="space-y-5">
       {formError && (
         <div role="alert" className="flex gap-2 rounded-md border border-bad/30 bg-bad-soft p-3 text-sm text-bad">
           <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
@@ -257,6 +265,12 @@ export function TaskForm({ onSubmit, onSubmittingChange }: TaskFormProps) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
+            {inactiveAssignee && (
+              <SelectItem value={inactiveAssignee.id} disabled>
+                <MemberAvatar name={inactiveAssignee.name} muted className="size-5 text-[9px]" />
+                {inactiveAssignee.name} <span className="text-faint">(inactive)</span>
+              </SelectItem>
+            )}
             {members.map((member) => (
               <SelectItem key={member.id} value={member.id}>
                 <MemberAvatar name={member.name} className="size-5 text-[9px]" />

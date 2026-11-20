@@ -1,6 +1,7 @@
 import {
   assignTaskSchema,
   createTaskSchema,
+  editTaskSchema,
   taskQuerySchema,
   updateTaskSchema,
   type DeleteTaskResponse,
@@ -75,6 +76,36 @@ export async function updateTask(req: Request<TaskIdParams>, res: Response): Pro
     task.status = changes.status;
   }
   if (changes.priority !== undefined) task.priority = changes.priority;
+  await task.save();
+  res.json(toTaskDto(task.toObject()));
+}
+
+/** PATCH /api/tasks/:id/details: edit any of title, description, status, priority, assigneeId at once. */
+export async function editTask(req: Request<TaskIdParams>, res: Response): Promise<void> {
+  const id = findTaskIdOr404(req.params.id);
+  const changes = editTaskSchema.parse(req.body);
+
+  const task = await TaskModel.findById(id);
+  if (!task) {
+    throw new HttpError(404, "Task not found");
+  }
+
+  if (changes.assigneeId !== undefined) {
+    const current = task.assigneeId?.toString() ?? null;
+    // Only a new assignee must be active: renaming a task owned by a since-deactivated member still works.
+    if (changes.assigneeId !== null && changes.assigneeId !== current) await requireActiveMember(changes.assigneeId);
+    task.assigneeId = changes.assigneeId === null ? null : new Types.ObjectId(changes.assigneeId);
+  }
+  if (changes.title !== undefined) task.title = changes.title;
+  if (changes.description !== undefined) task.description = changes.description ?? undefined;
+  if (changes.priority !== undefined) task.priority = changes.priority;
+  if (changes.status !== undefined) {
+    // Same rule as PATCH /api/tasks/:id: completedAt marks entering "done"; reopening clears it.
+    if (changes.status === "done" && task.status !== "done") task.completedAt = new Date();
+    if (changes.status !== "done") task.completedAt = null;
+    task.status = changes.status;
+  }
+
   await task.save();
   res.json(toTaskDto(task.toObject()));
 }

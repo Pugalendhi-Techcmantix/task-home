@@ -4,6 +4,7 @@ import {
   type AssignTaskInput,
   type CreateTaskInput,
   type DeleteTaskResponse,
+  type EditTaskInput,
   type Task,
   type TaskQuery,
   type UpdateTaskInput,
@@ -33,6 +34,15 @@ export function updateTask(id: string, input: UpdateTaskInput): Promise<Task> {
 export function assignTask(id: string, input: AssignTaskInput): Promise<Task> {
   return request(
     `/tasks/${encodeURIComponent(id)}/assignee`,
+    { method: "PATCH", body: JSON.stringify(input) },
+    taskSchema,
+  );
+}
+
+/** PATCH /api/tasks/:id/details: edit any fields in one request (`description: ""` clears it). */
+export function editTask(id: string, input: EditTaskInput): Promise<Task> {
+  return request(
+    `/tasks/${encodeURIComponent(id)}/details`,
     { method: "PATCH", body: JSON.stringify(input) },
     taskSchema,
   );

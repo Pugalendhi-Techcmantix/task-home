@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fetchDashboardSummary } from "./dashboard";
 import { fetchMembers } from "./members";
-import { assignTask } from "./tasks";
+import { assignTask, editTask } from "./tasks";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -51,6 +51,20 @@ describe("assignTask", () => {
     expect(url).toBe(`/api/tasks/${task.id}/assignee`);
     expect(init?.method).toBe("PATCH");
     expect(init?.body).toBe(JSON.stringify({ assigneeId: null }));
+  });
+});
+
+describe("editTask", () => {
+  it("sends PATCH /api/tasks/:id/details with the edited fields and parses the task", async () => {
+    const fetchMock = stubFetch({ ...task, title: "Renamed" });
+
+    const result = await editTask(task.id, { title: "Renamed", description: "" });
+
+    const [url, init] = fetchMock.mock.calls[0] ?? [];
+    expect(url).toBe(`/api/tasks/${task.id}/details`);
+    expect(init?.method).toBe("PATCH");
+    expect(init?.body).toBe(JSON.stringify({ title: "Renamed", description: "" }));
+    expect(result.title).toBe("Renamed");
   });
 });
 

@@ -30,6 +30,7 @@ Thumbs.db
 
 # Local tooling and agent scratch files
 .playwright-cli/
+.playwright-mcp/
 .superpowers/
 
 # Local design reference (not part of the submission)

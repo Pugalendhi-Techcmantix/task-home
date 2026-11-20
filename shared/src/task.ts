@@ -71,6 +71,27 @@ export const assignTaskSchema = z.strictObject({
   assigneeId: objectIdString("Choose a valid team member").nullable(),
 });
 
+/**
+ * Body of PATCH /api/tasks/:id/details: edit any field in one request. Unknown keys are rejected.
+ * An empty description becomes `null` (clear it); `assigneeId: null` unassigns.
+ */
+export const editTaskSchema = z
+  .strictObject({
+    title: titleSchema.optional(),
+    description: z
+      .string({ error: "Description must be text" })
+      .trim()
+      .max(DESCRIPTION_MAX, { error: `Description must be at most ${DESCRIPTION_MAX} characters` })
+      .transform((value) => (value === "" ? null : value))
+      .optional(),
+    status: statusSchema.optional(),
+    priority: prioritySchema.optional(),
+    assigneeId: objectIdString("Choose a valid team member").nullable().optional(),
+  })
+  .refine((data) => Object.values(data).some((value) => value !== undefined), {
+    error: "Provide at least one field to update",
+  });
+
 /** A task as returned by the API. */
 export const taskSchema = z.object({
   id: z.string(),
@@ -106,6 +127,8 @@ export type CreateTaskData = z.output<typeof createTaskSchema>;
 export type UpdateTaskInput = z.input<typeof updateTaskSchema>;
 export type TaskQuery = z.infer<typeof taskQuerySchema>;
 export type AssignTaskInput = z.infer<typeof assignTaskSchema>;
+export type EditTaskInput = z.input<typeof editTaskSchema>;
+export type EditTaskData = z.output<typeof editTaskSchema>;
 export type FieldError = z.infer<typeof fieldErrorSchema>;
 export type ApiErrorBody = z.infer<typeof apiErrorSchema>;
 export type DeleteTaskResponse = z.infer<typeof deleteTaskResponseSchema>;

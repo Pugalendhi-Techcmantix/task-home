@@ -1,12 +1,13 @@
 import type { Task, TaskPriority } from "@tracker/shared";
 import { ListChecks, Plus, SearchX, X } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { EmptyState, ErrorState, PageHeader, Panel } from "@/components/common/Page";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useActiveMembers, useMembers } from "@/features/team/queries";
+import { EditTaskSheet } from "./EditTaskSheet";
 import { useNewTask } from "./NewTaskProvider";
 import { useAssignTask, useDeleteTask, useTasks, useUpdateTaskStatus } from "./queries";
 import { TaskFilters } from "./TaskFilters";
@@ -53,6 +54,10 @@ export function TasksPage() {
   const updateStatus = useUpdateTaskStatus();
   const assign = useAssignTask();
   const remove = useDeleteTask();
+
+  const [editing, setEditing] = useState<Task | null>(null);
+  const editingAssignee = editing?.assigneeId ? membersById.get(editing.assigneeId) : undefined;
+  const inactiveAssignee = editingAssignee?.status === "inactive" ? editingAssignee : undefined;
 
   const tasks = useMemo(() => {
     const data = list.data ?? [];
@@ -133,9 +138,11 @@ export function TasksPage() {
             onStatusChange={(task, status) => updateStatus.mutate({ id: task.id, status })}
             onAssign={(task, assigneeId) => assign.mutate({ id: task.id, assigneeId })}
             onDelete={(task) => remove.mutate(task.id)}
+            onEdit={setEditing}
           />
         )}
       </Panel>
+      <EditTaskSheet task={editing} inactiveAssignee={inactiveAssignee} onClose={() => setEditing(null)} />
     </>
   );
 }
