@@ -1,11 +1,36 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
+.vite/
+*.tsbuildinfo
+
+# Deployment (Vercel CLI and Build Output API)
+.vercel/
+
+# Test output
 coverage/
+
+# Secrets: never commit. The example file is the template.
 .env
 .env.*
 !.env.example
+
+# Logs
 *.log
+npm-debug.log*
+
+# OS and editor files
 .DS_Store
-.vite/
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Local tooling and agent scratch files
+.playwright-cli/
 .superpowers/
-.vercel/
+
+# Local design reference (not part of the submission)
+KAIRO.html
