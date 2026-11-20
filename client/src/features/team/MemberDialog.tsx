@@ -6,10 +6,11 @@ import {
   type Member,
   type MemberRole,
 } from "@tracker/shared";
-import { CircleAlert, LoaderCircle } from "lucide-react";
+import { CircleAlert } from "lucide-react";
 import { useId, useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { ApiError } from "@/api/http";
+import { SubmitLabel } from "@/components/common/SubmitLabel";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,6 +27,9 @@ import { ROLE_LABELS } from "@/lib/labels";
 import { useCreateMember, useUpdateMember } from "./queries";
 
 type FieldName = "name" | "email" | "role";
+
+/** Inline errors slide down 4px and fade in when they appear (instant under reduced motion). */
+const ERROR_ENTER = "animate-in duration-(--dur-2) ease-(--ease-snappy) fade-in-0 slide-in-from-top-1";
 type FieldErrors = Partial<Record<FieldName, string>>;
 
 function toFieldErrors(entries: { field: unknown; message: string }[]): FieldErrors {
@@ -137,7 +141,7 @@ function MemberForm({ member, onDone, submitting, setSubmitting }: MemberFormPro
   const describedBy = (field: FieldName) => (errors[field] ? `${ids[field]}-error` : undefined);
   const fieldError = (field: FieldName) =>
     errors[field] && (
-      <p id={`${ids[field]}-error`} className="flex items-center gap-1.5 text-xs font-medium text-bad">
+      <p id={`${ids[field]}-error`} className={`flex items-center gap-1.5 text-xs font-medium text-bad-ink ${ERROR_ENTER}`}>
         <CircleAlert className="size-3.5 shrink-0" aria-hidden="true" />
         {errors[field]}
       </p>
@@ -146,13 +150,13 @@ function MemberForm({ member, onDone, submitting, setSubmitting }: MemberFormPro
   return (
     <form noValidate onSubmit={(event) => void handleSubmit(event)} className="space-y-4">
       {formError && (
-        <div role="alert" className="flex gap-2 rounded-md border border-bad/30 bg-bad-soft p-3 text-sm text-bad">
+        <div role="alert" className={`flex gap-2 rounded-lg border border-bad/25 bg-bad-soft p-3 text-[13px] text-bad-ink ${ERROR_ENTER}`}>
           <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {formError}
         </div>
       )}
       <div className="space-y-1.5">
-        <Label htmlFor={ids.name}>Name</Label>
+        <Label htmlFor={ids.name} className="text-xs font-medium">Name</Label>
         <Input
           ref={nameRef}
           id={ids.name}
@@ -166,7 +170,7 @@ function MemberForm({ member, onDone, submitting, setSubmitting }: MemberFormPro
         {fieldError("name")}
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor={ids.email}>Email</Label>
+        <Label htmlFor={ids.email} className="text-xs font-medium">Email</Label>
         <Input
           ref={emailRef}
           id={ids.email}
@@ -180,9 +184,9 @@ function MemberForm({ member, onDone, submitting, setSubmitting }: MemberFormPro
         {fieldError("email")}
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor={ids.role}>Role</Label>
+        <Label htmlFor={ids.role} className="text-xs font-medium">Role</Label>
         <Select value={role} onValueChange={(value) => isRole(value) && setRole(value)}>
-          <SelectTrigger id={ids.role} className="w-full" aria-describedby={describedBy("role")}>
+          <SelectTrigger id={ids.role} className="h-9 w-full" aria-describedby={describedBy("role")}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -195,13 +199,12 @@ function MemberForm({ member, onDone, submitting, setSubmitting }: MemberFormPro
         </Select>
         {fieldError("role")}
       </div>
-      <DialogFooter className="pt-2">
+      <DialogFooter className="pt-3">
         <Button type="button" variant="outline" onClick={onDone} disabled={submitting}>
           Cancel
         </Button>
         <Button type="submit" disabled={submitting}>
-          {submitting && <LoaderCircle className="animate-spin" aria-hidden="true" />}
-          {member ? "Save changes" : "Add member"}
+          <SubmitLabel submitting={submitting}>{member ? "Save changes" : "Add member"}</SubmitLabel>
         </Button>
       </DialogFooter>
     </form>

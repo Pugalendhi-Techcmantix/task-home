@@ -1,3 +1,4 @@
+import { cn } from "cn";
 import { Monitor, Moon, Sun } from "lucide-react";
 import { useTheme, type ThemePreference } from "@/app/theme";
 import { Button } from "@/components/ui/button";
@@ -20,15 +21,27 @@ function isThemePreference(value: string): value is ThemePreference {
   return OPTIONS.some((option) => option.value === value);
 }
 
+/** Both icons stay mounted so the swap can cross-rotate: the outgoing one turns away as the new one turns in. */
+const ICON_MOTION =
+  "absolute transition-[rotate,scale,opacity] duration-(--dur-2) ease-snappy motion-reduce:transition-opacity";
+
 export function ThemeToggle() {
   const { theme, resolved, setTheme } = useTheme();
-  const Icon = resolved === "dark" ? Moon : Sun;
+  const dark = resolved === "dark";
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={`Theme: ${theme}. Change theme`}>
-          <Icon aria-hidden="true" />
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={`Theme: ${theme}. Change theme`}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <span className="relative grid size-4 place-items-center" aria-hidden="true">
+            <Sun data-theme-icon="" className={cn(ICON_MOTION, dark && "rotate-90 scale-50 opacity-0")} />
+            <Moon data-theme-icon="" className={cn(ICON_MOTION, !dark && "-rotate-90 scale-50 opacity-0")} />
+          </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">

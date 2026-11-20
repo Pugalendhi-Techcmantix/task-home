@@ -14,7 +14,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider delayDuration={300}>
           {children}
-          <Toaster position="bottom-right" closeButton />
+          <Toaster position="top-center" closeButton duration={3500} />
         </TooltipProvider>
       </QueryClientProvider>
     </ThemeProvider>

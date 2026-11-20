@@ -2,6 +2,7 @@ import { TASK_STATUSES, type Member, type Task, type TaskStatus } from "@tracker
 import { MoreHorizontal, Pencil, Trash2, UserRound } from "lucide-react";
 import { useState } from "react";
 import { MemberAvatar } from "@/components/common/MemberAvatar";
+import { REVEAL_TRANSITION } from "@/components/common/motion";
 import { STATUS_TONES, TONE_CLASSES } from "@/components/common/Pill";
 import {
   AlertDialog,
@@ -27,8 +28,27 @@ import { cn } from "@/lib/utils";
 
 const UNASSIGNED = "__unassigned";
 
+/** Dot colour per status, matching the status chip tone. */
+const STATUS_DOT: Record<TaskStatus, string> = { todo: "bg-sky-ink", in_progress: "bg-warn-ink", done: "bg-good-ink" };
+
 function isTaskStatus(value: string): value is TaskStatus {
   return TASK_STATUSES.some((status) => status === value);
+}
+
+/** The chip's dot. After a status change (not on mount) it re-mounts and pops from a larger scale once. */
+function StatusDot({ status }: { status: TaskStatus }) {
+  const [seen, setSeen] = useState({ status, changed: false });
+  if (seen.status !== status) setSeen({ status, changed: true });
+  return (
+    <span
+      key={status}
+      className={cn(
+        "size-1.5 rounded-full bg-current",
+        seen.changed && "animate-in duration-(--dur-3) ease-(--ease-spring) zoom-in-[1.9]",
+      )}
+      aria-hidden="true"
+    />
+  );
 }
 
 /** Status pill that is also the quick-update control. */
@@ -38,14 +58,18 @@ export function StatusSelect({ task, onChange }: { task: Task; onChange: (status
       <SelectTrigger
         size="sm"
         aria-label={`Status for "${task.title}"`}
-        className={cn("h-7 w-auto gap-1.5 rounded-md border px-2 text-xs font-semibold shadow-none", TONE_CLASSES[STATUS_TONES[task.status]])}
+        className={cn(
+          "h-6 w-auto gap-1.5 rounded-md border py-0 pr-1.5 pl-2 text-xs font-medium shadow-none transition-[color,background-color,border-color,box-shadow,filter] duration-(--dur-2) ease-(--ease-snappy) hover:border-current/40 hover:brightness-95 dark:hover:brightness-110 [&>svg:last-child]:size-3 [&>svg:last-child]:opacity-60",
+          TONE_CLASSES[STATUS_TONES[task.status]],
+        )}
       >
-        <span className="size-1.5 rounded-full bg-current" aria-hidden="true" />
-        <SelectValue />
+        <StatusDot status={task.status} />
+        <SelectValue>{STATUS_LABELS[task.status]}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         {TASK_STATUSES.map((status) => (
           <SelectItem key={status} value={status}>
+            <span className={cn("size-1.5 shrink-0 rounded-full", STATUS_DOT[status])} aria-hidden="true" />
             {STATUS_LABELS[status]}
           </SelectItem>
         ))}
@@ -74,7 +98,7 @@ export function AssigneeSelect({ task, members, current, onChange, triggerId }: 
         id={triggerId}
         size="sm"
         aria-label={`Assignee for "${task.title}"`}
-        className="h-8 w-full max-w-[13rem] border-transparent bg-transparent px-1.5 shadow-none hover:border-border"
+        className="h-8 w-fit max-w-full justify-start gap-1.5 border-transparent bg-transparent px-1.5 text-[13px] shadow-none hover:border-border-strong hover:bg-row-hover data-[state=open]:border-border-strong dark:bg-transparent dark:hover:bg-row-hover *:data-[slot=select-value]:min-w-0"
       >
         <SelectValue />
       </SelectTrigger>
@@ -85,13 +109,16 @@ export function AssigneeSelect({ task, members, current, onChange, triggerId }: 
         </SelectItem>
         {inactiveCurrent && (
           <SelectItem value={inactiveCurrent.id} disabled>
-            <MemberAvatar name={inactiveCurrent.name} muted className="size-5 text-[9px]" />
-            {inactiveCurrent.name} <span className="text-faint">(inactive)</span>
+            <MemberAvatar name={inactiveCurrent.name} muted size="xs" />
+            <span className="truncate" title={inactiveCurrent.name}>
+              {inactiveCurrent.name}
+            </span>
+            <span className="shrink-0 text-faint">(inactive)</span>
           </SelectItem>
         )}
         {members.map((member) => (
           <SelectItem key={member.id} value={member.id}>
-            <MemberAvatar name={member.name} className="size-5 text-[9px]" />
+            <MemberAvatar name={member.name} size="xs" />
             {member.name}
           </SelectItem>
         ))}
@@ -114,11 +141,16 @@ export function RowMenu({ task, onEdit, onChangeAssignee, onDelete }: RowMenuPro
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="size-8" aria-label={`Actions for "${task.title}"`}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn("reveal-on-hover size-8 text-muted-foreground", REVEAL_TRANSITION)}
+            aria-label={`Actions for "${task.title}"`}
+          >
             <MoreHorizontal aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="min-w-44">
           <DropdownMenuItem onSelect={onEdit}>
             <Pencil aria-hidden="true" />
             Edit

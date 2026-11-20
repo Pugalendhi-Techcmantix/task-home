@@ -64,14 +64,17 @@ interface FieldProps {
   children: ReactNode;
 }
 
+/** Inline errors slide down 4px and fade in when they appear (instant under reduced motion). */
+const ERROR_ENTER = "animate-in duration-(--dur-2) ease-(--ease-snappy) fade-in-0 slide-in-from-top-1";
+
 function Field({ id, label, required = false, error, hint, children }: FieldProps) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-baseline justify-between gap-2">
-        <Label htmlFor={id}>
+        <Label htmlFor={id} className="text-xs font-medium">
           {label}
           {required && (
-            <span className="text-bad" aria-hidden="true">
+            <span className="text-bad-ink" aria-hidden="true">
               *
             </span>
           )}
@@ -80,7 +83,7 @@ function Field({ id, label, required = false, error, hint, children }: FieldProp
       </div>
       {children}
       {error && (
-        <p id={`${id}-error`} className="flex items-center gap-1.5 text-xs font-medium text-bad">
+        <p id={`${id}-error`} className={cn("flex items-center gap-1.5 text-xs font-medium text-bad-ink", ERROR_ENTER)}>
           <CircleAlert className="size-3.5 shrink-0" aria-hidden="true" />
           {error}
         </p>
@@ -91,7 +94,7 @@ function Field({ id, label, required = false, error, hint, children }: FieldProp
 
 function Counter({ value, max }: { value: number; max: number }) {
   return (
-    <span className={cn("tabular text-xs", value > max * 0.9 ? "text-warn" : "text-faint")} aria-hidden="true">
+    <span className={cn("num text-xs", value > max * 0.9 ? "text-warn-ink" : "text-faint")} aria-hidden="true">
       {value}/{max}
     </span>
   );
@@ -178,7 +181,7 @@ export function TaskForm({ onSubmit, onSubmittingChange, initial, inactiveAssign
   return (
     <form id={formId} noValidate onSubmit={(event) => void handleSubmit(event)} className="space-y-5">
       {formError && (
-        <div role="alert" className="flex gap-2 rounded-md border border-bad/30 bg-bad-soft p-3 text-sm text-bad">
+        <div role="alert" className={cn("flex gap-2 rounded-lg border border-bad/30 bg-bad-soft p-3 text-sm text-bad-ink", ERROR_ENTER)}>
           <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {formError}
         </div>
@@ -230,7 +233,7 @@ export function TaskForm({ onSubmit, onSubmittingChange, initial, inactiveAssign
       <div className="grid grid-cols-2 gap-4">
         <Field id={ids.status} label="Status" error={errors.status}>
           <Select value={status} onValueChange={(value) => setStatus(pick(TASK_STATUSES, value, "todo"))}>
-            <SelectTrigger id={ids.status} className="w-full">
+            <SelectTrigger id={ids.status} className="w-full data-[size=default]:h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -244,7 +247,7 @@ export function TaskForm({ onSubmit, onSubmittingChange, initial, inactiveAssign
         </Field>
         <Field id={ids.priority} label="Priority" error={errors.priority}>
           <Select value={priority} onValueChange={(value) => setPriority(pick(TASK_PRIORITIES, value, "medium"))}>
-            <SelectTrigger id={ids.priority} className="w-full">
+            <SelectTrigger id={ids.priority} className="w-full data-[size=default]:h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -260,20 +263,20 @@ export function TaskForm({ onSubmit, onSubmittingChange, initial, inactiveAssign
 
       <Field id={ids.assigneeId} label="Assignee" error={errors.assigneeId}>
         <Select value={assignee} onValueChange={setAssignee}>
-          <SelectTrigger id={ids.assigneeId} className="w-full" aria-describedby={describedBy("assigneeId")}>
+          <SelectTrigger id={ids.assigneeId} className="w-full data-[size=default]:h-9" aria-describedby={describedBy("assigneeId")}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
             {inactiveAssignee && (
               <SelectItem value={inactiveAssignee.id} disabled>
-                <MemberAvatar name={inactiveAssignee.name} muted className="size-5 text-[9px]" />
+                <MemberAvatar name={inactiveAssignee.name} muted size="xs" />
                 {inactiveAssignee.name} <span className="text-faint">(inactive)</span>
               </SelectItem>
             )}
             {members.map((member) => (
               <SelectItem key={member.id} value={member.id}>
-                <MemberAvatar name={member.name} className="size-5 text-[9px]" />
+                <MemberAvatar name={member.name} size="xs" />
                 {member.name}
               </SelectItem>
             ))}
@@ -282,7 +285,7 @@ export function TaskForm({ onSubmit, onSubmittingChange, initial, inactiveAssign
       </Field>
 
       <p className="text-xs text-muted-foreground">
-        <span className="text-bad" aria-hidden="true">
+        <span className="text-bad-ink" aria-hidden="true">
           *
         </span>{" "}
         Required

@@ -10,9 +10,15 @@ function colorFor(name: string): string {
   return AVATAR_COLORS[hash % AVATAR_COLORS.length] ?? AVATAR_COLORS[0];
 }
 
+const SIZE_CLASSES = {
+  xs: "size-5 text-[9px]",
+  sm: "size-6 text-[10px]",
+  md: "size-8 text-xs",
+} as const;
+
 interface MemberAvatarProps {
   name: string;
-  size?: "sm" | "md";
+  size?: keyof typeof SIZE_CLASSES;
   muted?: boolean;
   className?: string;
 }
@@ -24,13 +30,15 @@ export function MemberAvatar({ name, size = "sm", muted = false, className }: Me
       aria-hidden="true"
       style={{ backgroundColor: muted ? undefined : colorFor(name) }}
       className={cn(
-        "inline-grid shrink-0 place-items-center rounded-full font-semibold text-white",
-        size === "sm" ? "size-6 text-[10px]" : "size-8 text-xs",
-        muted && "bg-faint",
+        "relative inline-grid shrink-0 place-items-center overflow-hidden rounded-full font-semibold text-white ring-1 ring-black/10 ring-inset transition-[color,background-color,border-color] duration-(--dur-2) dark:ring-white/12",
+        SIZE_CLASSES[size],
+        muted && "border border-dashed border-border-strong bg-sunken text-muted-foreground ring-0",
         className,
       )}
     >
-      {initials(name)}
+      {/* Subtle top-to-bottom sheen */}
+      {!muted && <span className="pointer-events-none absolute inset-0 bg-linear-to-b from-white/18 to-black/10" />}
+      <span className="relative">{initials(name)}</span>
     </span>
   );
 }

@@ -20,12 +20,22 @@ function byPriorityThenNewest(a: Task, b: Task): number {
   return PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority] || b.createdAt.localeCompare(a.createdAt);
 }
 
+const NO_IDS: ReadonlySet<string> = new Set();
+
+/** The list's identity: filters and sort, but not the `?task=` highlight. */
+function listKeyOf(params: URLSearchParams): string {
+  const key = new URLSearchParams(params);
+  key.delete("task");
+  key.sort();
+  return key.toString();
+}
+
 function TableSkeleton() {
   return (
     <div className="divide-y" role="status" aria-label="Loading tasks">
       {Array.from({ length: 6 }, (_, i) => (
-        <div key={i} className="flex items-center gap-4 px-4 py-4">
-          <div className="flex-1 space-y-2">
+        <div key={i} className="flex h-13 items-center gap-4 px-4">
+          <div className="flex-1 space-y-1.5">
             <Skeleton className="h-3.5 w-2/5" />
             <Skeleton className="h-3 w-3/5" />
           </div>
@@ -54,6 +64,17 @@ export function TasksPage() {
   const updateStatus = useUpdateTaskStatus();
   const assign = useAssignTask();
   const remove = useDeleteTask();
+
+  // Motion only. The first list shown on this visit staggers in; after any filter or sort change the
+  // list is remounted (keyed by listKey) and cross-fades instead.
+  const listKey = listKeyOf(params);
+  const [firstListKey] = useState(listKey);
+  const [refiltered, setRefiltered] = useState(false);
+  if (!refiltered && listKey !== firstListKey) setRefiltered(true);
+  // Rows whose delete is in flight fade out. The mutation stays pending until its refetch lands, so the
+  // set is only read while pending; a failed delete brings its row back.
+  const [deleting, setDeleting] = useState(NO_IDS);
+  const leavingIds = remove.isPending ? deleting : NO_IDS;
 
   const [editing, setEditing] = useState<Task | null>(null);
   const editingAssignee = editing?.assigneeId ? membersById.get(editing.assigneeId) : undefined;
@@ -86,7 +107,10 @@ export function TasksPage() {
           <Button onClick={openNewTask} aria-keyshortcuts="N">
             <Plus aria-hidden="true" />
             New task
-            <kbd className="ml-1 hidden rounded border border-current/25 px-1.5 font-sans text-[10px] opacity-70 sm:inline" aria-hidden="true">
+            <kbd
+              className="kbd ml-1 hidden border-primary-foreground/30 bg-primary-foreground/15 text-primary-foreground sm:inline-flex"
+              aria-hidden="true"
+            >
               N
             </kbd>
           </Button>
@@ -97,6 +121,7 @@ export function TasksPage() {
           filters={filters}
           sort={sort}
           allTasks={all.data}
+          resultCount={list.isSuccess ? tasks.length : undefined}
           onChange={(key, value) => setParams(withParam(params, key, value))}
           onClear={clearFilters}
         />
@@ -131,13 +156,19 @@ export function TasksPage() {
         )}
         {list.isSuccess && tasks.length > 0 && (
           <TaskList
+            key={listKey}
+            entrance={refiltered ? "none" : "stagger"}
+            leavingIds={leavingIds}
             tasks={tasks}
             members={members}
             membersById={membersById}
             highlightId={highlightId}
             onStatusChange={(task, status) => updateStatus.mutate({ id: task.id, status })}
             onAssign={(task, assigneeId) => assign.mutate({ id: task.id, assigneeId })}
-            onDelete={(task) => remove.mutate(task.id)}
+            onDelete={(task) => {
+              setDeleting((current) => new Set(remove.isPending ? [...current, task.id] : [task.id]));
+              remove.mutate(task.id);
+            }}
             onEdit={setEditing}
           />
         )}

@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { prefersReducedMotion } from "./motion";
 
 export type ThemePreference = "light" | "dark" | "system";
 export type ResolvedTheme = "light" | "dark";
@@ -25,6 +26,22 @@ function readStoredPreference(): ThemePreference {
 
 const systemQuery = () => window.matchMedia("(prefers-color-scheme: dark)");
 
+/**
+ * Runs a theme class change with CSS transitions switched off for one frame, so controls with colour
+ * transitions don't fade between palettes at different speeds. The theme toggle's own icon
+ * (`data-theme-icon`) is exempt so its cross-rotate still plays.
+ */
+function withoutTransitions(change: () => void) {
+  const style = document.createElement("style");
+  style.textContent =
+    "*:not([data-theme-icon]),*::before,*::after{transition:none!important}";
+  document.head.appendChild(style);
+  change();
+  // Force the new colours to be computed while transitions are still off.
+  void getComputedStyle(document.body).color;
+  requestAnimationFrame(() => requestAnimationFrame(() => style.remove()));
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<ThemePreference>(readStoredPreference);
   const [systemDark, setSystemDark] = useState<boolean>(() => systemQuery().matches);
@@ -40,7 +57,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const resolved: ResolvedTheme = theme === "system" ? (systemDark ? "dark" : "light") : theme;
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", resolved === "dark");
+    const root = document.documentElement;
+    const dark = resolved === "dark";
+    // First render: the inline script in index.html already applied the class before paint.
+    if (root.classList.contains("dark") === dark) return;
+    const apply = () => withoutTransitions(() => root.classList.toggle("dark", dark));
+    // One calm whole-page cross-fade instead of every control re-colouring at its own speed.
+    if ("startViewTransition" in document && !prefersReducedMotion()) document.startViewTransition(apply);
+    else apply();
   }, [resolved]);
 
   const setTheme = useCallback((next: ThemePreference) => {

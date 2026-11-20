@@ -1,6 +1,7 @@
-import { TASK_STATUSES, type DashboardSummary } from "@tracker/shared";
+import { TASK_STATUSES, type DashboardSummary, type TaskPriority } from "@tracker/shared";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, PartyPopper, Plus } from "lucide-react";
+import { Activity, ArrowRight, CheckCheck, CircleDot, Flame, Plus } from "lucide-react";
+import type { ComponentProps, CSSProperties } from "react";
 import { Link } from "react-router";
 import { fetchDashboardSummary } from "@/api/dashboard";
 import { MemberAvatar } from "@/components/common/MemberAvatar";
@@ -13,6 +14,7 @@ import { useMembers } from "@/features/team/queries";
 import { STATUS_LABELS, formatShortDate } from "@/lib/labels";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
+import { useCountUp } from "./useCountUp";
 
 const STATUS_BAR: Record<(typeof TASK_STATUSES)[number], string> = {
   todo: "bg-sky",
@@ -20,30 +22,106 @@ const STATUS_BAR: Record<(typeof TASK_STATUSES)[number], string> = {
   done: "bg-good",
 };
 
+/** Left edge colour per priority; the priority label beside it keeps the meaning non-colour-only. */
+const PRIORITY_BAR: Record<TaskPriority, string> = {
+  high: "bg-bad",
+  medium: "bg-warn",
+  low: "bg-muted-foreground",
+};
+
+const LINK_FOCUS = "rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+
+/** Index for the `.motion-fade-up` delay (`--i`); the CSS steps 35ms per index. */
+function stagger(index: number): CSSProperties & Record<`--${string}`, number> {
+  return { "--i": index };
+}
+
+/** Matches the `.motion-fade-up` step, so a count or a fill starts as its tile arrives. */
+const STAGGER_MS = 35;
+
+/** Entrance order (`--i`) after the header: four KPI tiles, then the three panels. */
+const ORDER = { firstKpi: 1, attention: 5, workload: 6, status: 7 } as const;
+
+/** Arrow that nudges 2px right when its `group` link is hovered or focused. */
+const ARROW_NUDGE =
+  "transition-[opacity,translate] duration-[var(--dur-2,180ms)] ease-[var(--ease-snappy,cubic-bezier(.2,.9,.25,1))] motion-safe:group-hover:translate-x-0.5 motion-safe:group-focus-visible:translate-x-0.5";
+
+/**
+ * A bar that grows from its left edge when it first appears (CSS `@starting-style`, transform only, so no
+ * layout shift). Under reduced motion the starting style is skipped and the bar is simply there.
+ */
+const GROW_FROM_LEFT = "origin-left motion-safe:starting:[transform:scaleX(0)]";
+
+/** Meter rows start once the workload panel has risen in, then follow each other down the list. */
+const METER_BASE_DELAY_MS = ORDER.workload * STAGGER_MS + 60;
+const METER_STEP_MS = 50;
+/** Status segments sweep left to right after the status panel arrives. */
+const STATUS_BASE_DELAY_MS = ORDER.status * STAGGER_MS + 60;
+const STATUS_STEP_MS = 90;
+
+function growTransition(delayMs: number, extra?: string): CSSProperties {
+  const grow = `transform var(--dur-4, 420ms) var(--ease-spring, cubic-bezier(0.22, 1, 0.36, 1)) ${delayMs}ms`;
+  return { transition: extra ? `${extra}, ${grow}` : grow };
+}
+
+type CountedKpiProps = Omit<ComponentProps<typeof KpiCard>, "value"> & { value: number; index: number };
+
+/**
+ * KPI tile whose number counts up on mount and tweens on change. The animated copy is hidden from screen
+ * readers, which get one sentence with the final value instead of every frame.
+ */
+function CountedKpi({ value, index, ...card }: CountedKpiProps) {
+  const shown = useCountUp(value, { delay: index * STAGGER_MS });
+  return (
+    <div className="motion-fade-up relative grid min-w-0" style={stagger(index)}>
+      <div className="grid min-w-0" aria-hidden="true">
+        <KpiCard {...card} value={shown} />
+      </div>
+      <p className="sr-only">{`${card.label}: ${value}, ${card.caption}`}</p>
+    </div>
+  );
+}
+
+function percentOf(count: number, total: number): number {
+  return total > 0 ? Math.round((count / total) * 100) : 0;
+}
+
+function todayLabel(now: Date): string {
+  const weekday = now.toLocaleDateString("en-GB", { weekday: "long" });
+  const rest = now.toLocaleDateString("en-GB", { day: "numeric", month: "long" });
+  return `${weekday}, ${rest}`;
+}
+
 function NeedsAttention({ tasks }: { tasks: DashboardSummary["needsAttention"] }) {
   const { data: members } = useMembers();
   const nameOf = (id: string | undefined) => members?.find((m) => m.id === id)?.name;
 
   if (tasks.length === 0) {
     return (
-      <div className="flex items-center gap-3 px-4 py-8 text-sm text-muted-foreground">
-        <PartyPopper className="size-5 text-good" aria-hidden="true" />
+      <div className="flex items-center gap-3 px-4 py-10 text-sm text-muted-foreground">
+        <span className="motion-pop grid size-10 shrink-0 place-items-center rounded-xl border border-good/20 bg-good-soft text-good-ink">
+          <CheckCheck className="size-4.5" aria-hidden="true" />
+        </span>
         Nothing urgent. No open high-priority tasks.
       </div>
     );
   }
   return (
     <ul className="divide-y">
-      {tasks.map((task) => {
+      {tasks.map((task, index) => {
         const assignee = nameOf(task.assigneeId);
         return (
-          <li key={task.id}>
+          <li key={task.id} className="motion-fade-up" style={stagger(ORDER.attention + 1 + index)}>
             <Link
               to={`/tasks?task=${task.id}`}
-              className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/60 focus-visible:bg-accent focus-visible:outline-none"
+              className="row-interactive group relative flex items-center gap-3 py-3 pr-4 pl-5"
             >
+              <span
+                className={cn("absolute inset-y-2.5 left-0 w-0.75 rounded-r-full", PRIORITY_BAR[task.priority])}
+                aria-hidden="true"
+              />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{task.title}</p>
+                <p className="truncate text-[13.5px] font-medium">{task.title}</p>
                 <p className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
                   <PriorityLabel priority={task.priority} className="text-[11px]" />
                   <span aria-hidden="true">·</span>
@@ -54,13 +132,17 @@ function NeedsAttention({ tasks }: { tasks: DashboardSummary["needsAttention"] }
               <span className="hidden w-32 items-center gap-2 truncate text-xs sm:flex">
                 {assignee ? (
                   <>
-                    <MemberAvatar name={assignee} />
+                    <MemberAvatar name={assignee} size="xs" />
                     <span className="truncate">{assignee}</span>
                   </>
                 ) : (
                   <span className="text-faint">Unassigned</span>
                 )}
               </span>
+              <ArrowRight
+                className={cn("reveal-on-hover size-4 shrink-0 text-muted-foreground", ARROW_NUDGE)}
+                aria-hidden="true"
+              />
             </Link>
           </li>
         );
@@ -72,12 +154,12 @@ function NeedsAttention({ tasks }: { tasks: DashboardSummary["needsAttention"] }
 function Workload({ rows }: { rows: DashboardSummary["workload"] }) {
   const max = Math.max(1, ...rows.map((row) => row.openCount));
   return (
-    <ul className="space-y-3.5 px-4 py-4">
-      {rows.map((row) => {
+    <ul className="space-y-4 px-4 py-4">
+      {rows.map((row, index) => {
         const muted = row.memberId === null;
         const label = (
           <span className={cn("flex items-center gap-2 truncate text-sm", muted && "text-muted-foreground")}>
-            {!muted && <MemberAvatar name={row.name} className="size-5 text-[9px]" />}
+            {!muted && <MemberAvatar name={row.name} size="xs" />}
             {row.name}
           </span>
         );
@@ -85,22 +167,28 @@ function Workload({ rows }: { rows: DashboardSummary["workload"] }) {
           <li key={row.memberId ?? row.name}>
             <div className="flex items-center justify-between gap-3">
               {row.memberId ? (
-                <Link to={`/tasks?assignee=${row.memberId}`} className="min-w-0 rounded-sm hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+                <Link to={`/tasks?assignee=${row.memberId}`} className={cn("min-w-0 hover:underline", LINK_FOCUS)}>
                   {label}
                 </Link>
               ) : row.name === "Unassigned" ? (
-                <Link to="/tasks?assignee=unassigned" className="min-w-0 rounded-sm hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+                <Link to="/tasks?assignee=unassigned" className={cn("min-w-0 hover:underline", LINK_FOCUS)}>
                   {label}
                 </Link>
               ) : (
                 label
               )}
-              <span className="tabular text-sm font-semibold">{row.openCount}</span>
+              <span className="num text-sm font-semibold">{row.openCount}</span>
             </div>
-            <div className="mt-1.5 h-1.5 rounded-full bg-secondary" aria-hidden="true">
+            <div className="meter mt-2" aria-hidden="true">
               <div
-                className={cn("h-full rounded-full", muted ? "bg-faint" : "bg-brand")}
-                style={{ width: `${(row.openCount / max) * 100}%` }}
+                className={cn("meter-fill", GROW_FROM_LEFT, muted && "bg-muted-foreground/40! bg-none!")}
+                style={{
+                  width: `${(row.openCount / max) * 100}%`,
+                  ...growTransition(
+                    METER_BASE_DELAY_MS + Math.min(index, 8) * METER_STEP_MS,
+                    "width 600ms var(--ease-out-quint)",
+                  ),
+                }}
               />
             </div>
           </li>
@@ -114,24 +202,36 @@ function StatusBreakdown({ summary }: { summary: DashboardSummary }) {
   const total = summary.totals.all;
   return (
     <div className="px-4 py-4">
-      <div className="flex h-2.5 overflow-hidden rounded-full bg-secondary" role="img" aria-label={TASK_STATUSES.map((s) => `${STATUS_LABELS[s]} ${summary.byStatus[s]}`).join(", ")}>
-        {TASK_STATUSES.map((status) =>
+      <div
+        className="flex h-2.5 gap-0.5 overflow-hidden rounded-full bg-sunken"
+        role="img"
+        aria-label={TASK_STATUSES.map((s) => `${STATUS_LABELS[s]} ${summary.byStatus[s]}`).join(", ")}
+      >
+        {TASK_STATUSES.map((status, index) =>
           summary.byStatus[status] > 0 ? (
-            <div key={status} className={STATUS_BAR[status]} style={{ width: `${(summary.byStatus[status] / Math.max(total, 1)) * 100}%` }} />
+            <div
+              key={status}
+              className={cn("rounded-full", GROW_FROM_LEFT, STATUS_BAR[status])}
+              style={{
+                flex: `${summary.byStatus[status]} 1 0%`,
+                ...growTransition(STATUS_BASE_DELAY_MS + index * STATUS_STEP_MS),
+              }}
+            />
           ) : null,
         )}
       </div>
       <dl className="mt-4 grid grid-cols-3 gap-3">
         {TASK_STATUSES.map((status) => (
-          <div key={status}>
+          <div key={status} className="min-w-0">
             <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <span className={cn("size-2 rounded-full", STATUS_BAR[status])} aria-hidden="true" />
-              {STATUS_LABELS[status]}
+              <span className={cn("size-2 shrink-0 rounded-full", STATUS_BAR[status])} aria-hidden="true" />
+              <span className="truncate">{STATUS_LABELS[status]}</span>
             </dt>
-            <dd className="tabular mt-0.5 text-lg font-bold">
-              <Link to={`/tasks?status=${status}`} className="rounded-sm hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+            <dd className="mt-1 flex items-baseline gap-1.5">
+              <Link to={`/tasks?status=${status}`} className={cn("num text-lg font-semibold hover:underline", LINK_FOCUS)}>
                 {summary.byStatus[status]}
               </Link>
+              <span className="num text-xs text-muted-foreground">{percentOf(summary.byStatus[status], total)}%</span>
             </dd>
           </div>
         ))}
@@ -145,12 +245,15 @@ function DashboardSkeleton() {
     <div className="space-y-4" role="status" aria-label="Loading dashboard">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }, (_, i) => (
-          <Skeleton key={i} className="h-24" />
+          <Skeleton key={i} className="h-26 rounded-panel" />
         ))}
       </div>
-      <div className="grid gap-4 lg:grid-cols-5">
-        <Skeleton className="h-72 lg:col-span-3" />
-        <Skeleton className="h-72 lg:col-span-2" />
+      <div className="grid gap-4 lg:grid-cols-12">
+        <Skeleton className="h-96 rounded-panel lg:col-span-7" />
+        <div className="flex flex-col gap-4 lg:col-span-5">
+          <Skeleton className="h-52 rounded-panel" />
+          <Skeleton className="h-36 rounded-panel" />
+        </div>
       </div>
     </div>
   );
@@ -162,58 +265,102 @@ export function DashboardPage() {
   const { openNewTask } = useNewTask();
 
   return (
-    <>
-      <PageHeader
-        title="Dashboard"
-        description="Where your team's work stands right now: what's open, what's urgent, and who's carrying the load."
-        actions={
-          <Button onClick={openNewTask} aria-keyshortcuts="N">
-            <Plus aria-hidden="true" />
-            New task
-          </Button>
-        }
-      />
+    <div className="flex flex-col gap-4">
+      {/* The header arrives with the route's own entrance; the data below follows it in order. */}
+      <div className="-mb-2">
+        <PageHeader
+          kicker={todayLabel(new Date())}
+          title="Dashboard"
+          description="Where your team's work stands right now: what's open, what's urgent, and who's carrying the load."
+          actions={
+            <Button onClick={openNewTask} aria-keyshortcuts="N">
+              <Plus aria-hidden="true" />
+              New task
+            </Button>
+          }
+        />
+      </div>
       {summary.isPending && <DashboardSkeleton />}
       {summary.isError && (
-        <Panel>
-          <ErrorState message={summary.error.message} onRetry={() => void summary.refetch()} />
-        </Panel>
-      )}
-      {summary.isSuccess && (
-        <div className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <KpiCard
-              label="Open tasks"
-              value={summary.data.totals.open}
-              caption={members ? `across ${members.length} active members` : "to do and in progress"}
-            />
-            <KpiCard label="In progress" value={summary.data.totals.inProgress} caption="started, not finished" edge="warn" />
-            <KpiCard label="High priority" value={summary.data.totals.highOpen} caption="open and urgent" edge="bad" />
-            <KpiCard label="Done this week" value={summary.data.totals.doneThisWeek} caption="since Monday" edge="good" />
-          </div>
-          <div className="grid gap-4 lg:grid-cols-5">
-            <Panel className="lg:col-span-3">
-              <PanelHeader
-                title="Needs attention"
-                action={
-                  <Link to="/tasks?priority=high" className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:underline">
-                    All high priority <ArrowRight className="size-3.5" aria-hidden="true" />
-                  </Link>
-                }
-              />
-              <NeedsAttention tasks={summary.data.needsAttention} />
-            </Panel>
-            <Panel className="lg:col-span-2">
-              <PanelHeader title="Workload by member" hint="open tasks" />
-              <Workload rows={summary.data.workload} />
-            </Panel>
-          </div>
+        <div className="motion-fade-up" style={stagger(1)}>
           <Panel>
-            <PanelHeader title="Tasks by status" hint={`${summary.data.totals.all} total`} />
-            <StatusBreakdown summary={summary.data} />
+            <ErrorState message={summary.error.message} onRetry={() => void summary.refetch()} />
           </Panel>
         </div>
       )}
-    </>
+      {summary.isSuccess && (
+        <>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <CountedKpi
+              index={ORDER.firstKpi}
+              icon={CircleDot}
+              label="Open tasks"
+              value={summary.data.totals.open}
+              caption={members ? `across ${members.length} active members` : "to do and in progress"}
+              edge="brand"
+            />
+            <CountedKpi
+              index={ORDER.firstKpi + 1}
+              icon={Activity}
+              label="In progress"
+              value={summary.data.totals.inProgress}
+              caption="started, not finished"
+              edge="warn"
+            />
+            <CountedKpi
+              index={ORDER.firstKpi + 2}
+              icon={Flame}
+              label="High priority"
+              value={summary.data.totals.highOpen}
+              caption="open and urgent"
+              edge="bad"
+            />
+            <CountedKpi
+              index={ORDER.firstKpi + 3}
+              icon={CheckCheck}
+              label="Done this week"
+              value={summary.data.totals.doneThisWeek}
+              caption="since Monday"
+              edge="good"
+            />
+          </div>
+          <div className="grid gap-4 lg:grid-cols-12">
+            <div className="motion-fade-up min-w-0 lg:col-span-7 lg:self-start" style={stagger(ORDER.attention)}>
+              <Panel>
+                <PanelHeader
+                  title="Needs attention"
+                  action={
+                    <Link
+                      to="/tasks?priority=high"
+                      className={cn(
+                        "group inline-flex items-center gap-1 text-xs font-semibold text-brand-ink hover:underline",
+                        LINK_FOCUS,
+                      )}
+                    >
+                      All high priority <ArrowRight className={cn("size-3.5", ARROW_NUDGE)} aria-hidden="true" />
+                    </Link>
+                  }
+                />
+                <NeedsAttention tasks={summary.data.needsAttention} />
+              </Panel>
+            </div>
+            <div className="flex min-w-0 flex-col gap-4 lg:col-span-5">
+              <div className="motion-fade-up" style={stagger(ORDER.workload)}>
+                <Panel>
+                  <PanelHeader title="Workload by member" hint="open tasks" />
+                  <Workload rows={summary.data.workload} />
+                </Panel>
+              </div>
+              <div className="motion-fade-up" style={stagger(ORDER.status)}>
+                <Panel>
+                  <PanelHeader title="Tasks by status" hint={`${summary.data.totals.all} total`} />
+                  <StatusBreakdown summary={summary.data} />
+                </Panel>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
   );
 }

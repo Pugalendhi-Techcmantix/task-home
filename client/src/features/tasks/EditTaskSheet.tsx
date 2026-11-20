@@ -1,7 +1,7 @@
 import type { CreateTaskInput, Member, Task } from "@tracker/shared";
-import { LoaderCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { SubmitLabel } from "@/components/common/SubmitLabel";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -53,10 +53,11 @@ export function EditTaskSheet({ task, inactiveAssignee, onClose }: EditTaskSheet
         if (!next && !submitting) onClose();
       }}
     >
-      <SheetContent className="flex w-full flex-col gap-0 p-0 sm:max-w-md">
-        <SheetHeader className="border-b px-5 py-4">
-          <SheetTitle>Edit task</SheetTitle>
-          <SheetDescription>Change any detail. Everything saves together.</SheetDescription>
+      <SheetContent className="flex w-full flex-col gap-0 p-0 data-[side=right]:w-full">
+        <SheetHeader className="gap-1 border-b px-5 py-4 pr-12">
+          <p className="eyebrow">Update</p>
+          <SheetTitle className="text-base font-semibold tracking-tight">Edit task</SheetTitle>
+          <SheetDescription className="text-[13px]">Change any detail. Everything saves together.</SheetDescription>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto px-5 py-5">
           {task && (
@@ -70,13 +71,12 @@ export function EditTaskSheet({ task, inactiveAssignee, onClose }: EditTaskSheet
             />
           )}
         </div>
-        <SheetFooter className="flex-row justify-end gap-2 border-t bg-muted/40 px-5 py-4">
+        <SheetFooter className="mt-0 flex-row items-center justify-end gap-2 border-t bg-sunken/60 px-5 py-3.5">
           <Button variant="outline" onClick={onClose} disabled={submitting}>
             Cancel
           </Button>
           <Button type="submit" form={EDIT_TASK_FORM_ID} disabled={submitting}>
-            {submitting && <LoaderCircle className="animate-spin" aria-hidden="true" />}
-            {submitting ? "Saving…" : "Save changes"}
+            <SubmitLabel submitting={submitting}>{submitting ? "Saving…" : "Save changes"}</SubmitLabel>
           </Button>
         </SheetFooter>
       </SheetContent>

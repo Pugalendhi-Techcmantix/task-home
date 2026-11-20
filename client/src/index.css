@@ -11,7 +11,7 @@
  * are added for pills, KPI edges and meters.
  */
 :root {
-  --background: #f5f7f8;
+  --background: #f6f8f9;
   --foreground: #101a20;
   --card: #ffffff;
   --card-foreground: #101a20;
@@ -23,14 +23,15 @@
   --secondary-foreground: #101a20;
   --muted: #f0f3f5;
   --muted-foreground: #5d6b75;
-  --faint: #8a97a0;
+  --faint: #626f79;
   --accent: #eef2f4;
   --accent-foreground: #101a20;
   --destructive: #c03d10;
   --border: #e1e6ea;
   --input: #d3dadf;
   --ring: #0d7a6b;
-  --radius: 0.625rem;
+  --radius: 0.5rem;
+  --radius-panel: 0.75rem;
 
   --brand: #0d7a6b;
   --brand-soft: #e0f1ed;
@@ -54,7 +55,45 @@
   --sidebar-border: #e1e6ea;
   --sidebar-ring: #0d7a6b;
 
-  --shadow-card: 0 1px 2px rgb(16 26 32 / 0.05), 0 6px 20px rgb(16 26 32 / 0.08);
+
+  /* Surfaces */
+  --sunken: #eef2f4;
+  --border-strong: #cfd7dc;
+  --row-hover: #f3f6f7;
+  --highlight: inset 0 1px 0 #ffffff;
+
+  /* Text-on-soft inks (AA on their -soft backgrounds) */
+  --brand-ink: #0a6a5c;
+  --good-ink: #14703c;
+  --warn-ink: #7d5008;
+  --bad-ink: #a8330c;
+  --sky-ink: #2c6a99;
+  --violet-ink: #6d4bb0;
+
+  /* Shadows */
+  --shadow-card: 0 1px 0 rgb(16 26 32 / 0.03), 0 1px 2px rgb(16 26 32 / 0.05);
+  --shadow-raised: 0 1px 2px rgb(16 26 32 / 0.06), 0 4px 12px -2px rgb(16 26 32 / 0.08);
+  --shadow-pop: 0 8px 24px -6px rgb(16 26 32 / 0.18), 0 0 0 1px var(--border);
+  --shadow-overlay: 0 24px 64px -12px rgb(16 26 32 / 0.35);
+
+  /* Glow and motion */
+  --canvas-glow: radial-gradient(
+    48rem 18rem at 50% -6rem,
+    color-mix(in oklab, var(--brand) 8%, transparent),
+    transparent
+  );
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 120ms;
+  --dur: 200ms;
+
+  /* Motion tokens (docs/superpowers/specs/2026-11-20-motion-direction.md). Names are a contract. */
+  --ease-spring: linear(0, 0.25 7%, 0.56 14%, 0.82 22%, 0.97 31%, 1.03 40%, 1.02 50%, 1 64%, 1);
+  --ease-snappy: cubic-bezier(0.2, 0.9, 0.25, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --dur-1: 120ms; /* micro: hover, press */
+  --dur-2: 180ms; /* controls: toggles, menus */
+  --dur-3: 240ms; /* panels, route changes */
+  --dur-4: 420ms; /* one-time data reveals */
 }
 
 .dark {
@@ -70,7 +109,7 @@
   --secondary-foreground: #e4ebef;
   --muted: #172128;
   --muted-foreground: #93a3ad;
-  --faint: #6c7c86;
+  --faint: #808f9a;
   --accent: #1b262e;
   --accent-foreground: #e4ebef;
   --destructive: #f0845c;
@@ -100,7 +139,28 @@
   --sidebar-border: #222e36;
   --sidebar-ring: #36bfa8;
 
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 20px rgb(0 0 0 / 0.35);
+  --sunken: #0a1014;
+  --border-strong: #34444e;
+  --row-hover: #162027;
+  --highlight: inset 0 1px 0 rgb(255 255 255 / 0.05);
+
+  --brand-ink: #36bfa8;
+  --good-ink: #4cc982;
+  --warn-ink: #e6b24f;
+  --bad-ink: #f0845c;
+  --sky-ink: #80b6df;
+  --violet-ink: #b39af0;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.12), 0 4px 12px -2px rgb(0 0 0 / 0.16);
+  --shadow-pop: 0 8px 24px -6px rgb(0 0 0 / 0.36), 0 0 0 1px var(--border-strong);
+  --shadow-overlay: 0 24px 64px -12px rgb(0 0 0 / 0.7);
+
+  --canvas-glow: radial-gradient(
+    48rem 18rem at 50% -6rem,
+    color-mix(in oklab, var(--brand) 12%, transparent),
+    transparent
+  );
   color-scheme: dark;
 }
 
@@ -150,13 +210,34 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  --color-sunken: var(--sunken);
+  --color-border-strong: var(--border-strong);
+  --color-row-hover: var(--row-hover);
+  --color-brand-ink: var(--brand-ink);
+  --color-good-ink: var(--good-ink);
+  --color-warn-ink: var(--warn-ink);
+  --color-bad-ink: var(--bad-ink);
+  --color-sky-ink: var(--sky-ink);
+  --color-violet-ink: var(--violet-ink);
+
   --shadow-card: var(--shadow-card);
+  --shadow-panel: var(--shadow-card);
+  --shadow-button: var(--highlight), var(--shadow-card);
+  --shadow-raised: var(--shadow-raised);
+  --shadow-pop: var(--shadow-pop);
+  --shadow-overlay: var(--shadow-overlay);
+
+  --ease-out-quint: var(--ease-out-quint);
+  --ease-spring: var(--ease-spring);
+  --ease-snappy: var(--ease-snappy);
+  --ease-in: var(--ease-in);
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
   --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-panel: var(--radius-panel);
 }
 
 @layer base {
@@ -170,11 +251,364 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-size: 14px;
+    letter-spacing: -0.006em;
     font-feature-settings: "tnum" 0;
+  }
+  h1,
+  h2 {
+    letter-spacing: -0.02em;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
   }
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+}
+
+/*
+ * Surface and utility classes shared by every page (see docs/superpowers/specs/2026-11-20-ui-polish-direction.md).
+ * Motion lives only under prefers-reduced-motion: no-preference or in short transitions that the
+ * reduced-motion block at the bottom flattens.
+ */
+@layer components {
+  .surface-panel {
+    background-color: var(--card);
+    color: var(--card-foreground);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
+    box-shadow: var(--highlight), var(--shadow-card);
+  }
+  .surface-raised {
+    background-color: var(--card);
+    color: var(--card-foreground);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
+    box-shadow: var(--highlight), var(--shadow-raised);
+  }
+
+  .kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 18px;
+    min-width: 18px;
+    padding: 0 5px;
+    border: 1px solid var(--border-strong);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    background-color: var(--sunken);
+    color: var(--muted-foreground);
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+
+  .eyebrow {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  .num {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  .row-interactive {
+    transition: background-color var(--dur-fast) var(--ease-out-quint);
+  }
+  .row-interactive:hover {
+    background-color: var(--row-hover);
+  }
+  .row-interactive:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--ring);
+  }
+
+  .reveal-on-hover {
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-out-quint);
+  }
+  .group:hover .reveal-on-hover,
+  .group:focus-within .reveal-on-hover,
+  .reveal-on-hover:focus-visible,
+  .reveal-on-hover:focus-within,
+  .reveal-on-hover[data-state="open"] {
+    opacity: 1;
+  }
+  @media (hover: none) {
+    .reveal-on-hover {
+      opacity: 1;
+    }
+  }
+  @media (max-width: 767.98px) {
+    .reveal-on-hover {
+      opacity: 1;
+    }
+  }
+
+  .kpi-edge {
+    position: relative;
+    overflow: hidden;
+    background-image: linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--edge, var(--border-strong)) 6%, transparent),
+      transparent 70%
+    );
+  }
+  .kpi-edge::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 2px;
+    background-color: var(--edge, var(--border-strong));
+  }
+  .kpi-edge[data-edge="brand"] {
+    --edge: var(--brand);
+  }
+  .kpi-edge[data-edge="good"] {
+    --edge: var(--good);
+  }
+  .kpi-edge[data-edge="warn"] {
+    --edge: var(--warn);
+  }
+  .kpi-edge[data-edge="bad"] {
+    --edge: var(--bad);
+  }
+
+  .meter {
+    height: 6px;
+    overflow: hidden;
+    border-radius: 9999px;
+    background-color: var(--sunken);
+  }
+  .meter-fill {
+    height: 100%;
+    border-radius: inherit;
+    background-image: linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--brand) 70%, white),
+      var(--brand)
+    );
+    transition: width 600ms var(--ease-out-quint);
+  }
+
+  .glass-bar {
+    background-color: color-mix(in oklab, var(--card) 80%, transparent);
+    -webkit-backdrop-filter: blur(12px) saturate(1.5);
+    backdrop-filter: blur(12px) saturate(1.5);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .canvas-glow {
+    background-image: var(--canvas-glow);
+    background-repeat: no-repeat;
+  }
+}
+
+/*
+ * Not named `enter`: tw-animate-css owns `@keyframes enter` (the Radix overlay zoom/slide/fade), and a
+ * second definition with that name would replace it for every dialog, menu and tooltip.
+ */
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* `.enter`: the route-change enter (AppLayout keys it by pathname). The old page leaves instantly. */
+@media (prefers-reduced-motion: no-preference) {
+  .enter,
+  .enter-stagger > * {
+    animation: motion-fade-up var(--dur-3) var(--ease-spring) backwards;
+  }
+  .enter-stagger > * {
+    animation-delay: calc(min(var(--i, 0), 10) * 35ms);
+  }
+}
+
+/*
+ * Motion utilities (contract shared by every page; see the motion direction spec).
+ * They sit outside any cascade layer on purpose: on the element that carries them they win over
+ * Tailwind's transition-* utilities, so every class lists the full set of properties it transitions.
+ * Movement uses the individual `scale` / `translate` properties so press, lift and enter compose
+ * with each other and with Tailwind transforms instead of overwriting one `transform`.
+ * Enter animations use fill-mode `backwards`: they hold the start frame during the stagger delay and
+ * leave no styles behind once finished, so hover/press transitions keep working afterwards.
+ */
+:root {
+  --motion-transition:
+    scale var(--dur-1) var(--ease-snappy), translate var(--dur-2) var(--ease-snappy),
+    box-shadow var(--dur-2) var(--ease-snappy), color var(--dur-1) var(--ease-out-quint),
+    background-color var(--dur-1) var(--ease-out-quint),
+    border-color var(--dur-1) var(--ease-out-quint), opacity var(--dur-1) var(--ease-out-quint),
+    outline-color var(--dur-1) var(--ease-out-quint);
+}
+
+@keyframes motion-fade-up {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+@keyframes motion-pop {
+  from {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+@keyframes motion-fade {
+  from {
+    opacity: 0;
+  }
+}
+/* No `to` frame: the colour eases back to whatever background the element already has. */
+@keyframes motion-flash {
+  from,
+  20% {
+    background-color: var(--brand-soft);
+  }
+}
+@keyframes focus-ring-in {
+  from {
+    outline-offset: 0;
+  }
+}
+
+.motion-press,
+.motion-lift {
+  transition: var(--motion-transition);
+}
+
+/* Colour-only: still informative under reduced motion, so it is not gated. */
+.motion-flash {
+  animation: motion-flash 1.2s var(--ease-out-quint);
+}
+
+.motion-shimmer,
+.skeleton-shimmer {
+  background-color: var(--muted);
+}
+
+@media (hover: hover) {
+  .motion-lift:hover {
+    box-shadow: var(--highlight), var(--shadow-raised);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .motion-press:active:not(:disabled, [aria-disabled="true"], [data-disabled]) {
+    scale: 0.97;
+  }
+
+  @media (hover: hover) {
+    .motion-lift:hover {
+      translate: 0 -1px;
+    }
+  }
+
+  .motion-fade-up {
+    animation: motion-fade-up var(--dur-3) var(--ease-spring) backwards;
+    animation-delay: calc(min(var(--i, 0), 10) * 35ms);
+  }
+
+  .motion-pop {
+    animation: motion-pop var(--dur-2) var(--ease-spring) backwards;
+  }
+
+  .motion-shimmer,
+  .skeleton-shimmer {
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in oklab, var(--foreground) 4.5%, transparent) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2.2s ease-in-out infinite;
+  }
+
+  /* Focus rings grow out from the control. Elements that run their own enter animation are skipped
+     so focusing them never restarts it. */
+  :where(
+      a[href],
+      button,
+      input,
+      select,
+      textarea,
+      summary,
+      [role="tab"],
+      [role="switch"],
+      [role="checkbox"],
+      [role="radio"],
+      [role="combobox"],
+      [role="menuitem"]
+    ):focus-visible:not(.motion-fade-up, .motion-pop, .enter, .motion-flash) {
+    animation: focus-ring-in var(--dur-1) var(--ease-out-quint);
+  }
+}
+
+/* ---- Shell and primitives (worker A) ---- */
+
+/* Trailing button icons (arrows, chevrons) lean 2px toward where the button goes. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-slot="button"] > svg[data-icon="inline-end"] {
+    transition: translate var(--dur-2) var(--ease-spring);
+  }
+  @media (hover: hover) {
+    [data-slot="button"]:hover > svg[data-icon="inline-end"] {
+      translate: 2px 0;
+    }
+  }
+}
+
+/*
+ * Sidebar labels, badges and hints are display-toggled when the rail collapses. Restarting this
+ * animation every time they are shown again lets them fade in behind the widening rail instead of
+ * popping in at full strength.
+ */
+@keyframes sidebar-reveal {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sidebar-reveal {
+    animation: sidebar-reveal var(--dur-3) var(--ease-out-quint) 60ms backwards;
+  }
+}
+
+/* Toasts (sonner): spring in from the top edge, leave with a quick fade. Swipes keep sonner's own handling. */
+@media (prefers-reduced-motion: no-preference) {
+  :root [data-sonner-toast]:not([data-swiping="true"]) {
+    transition-property: transform, opacity, height, box-shadow !important;
+    transition-duration: var(--dur-4), var(--dur-2), var(--dur-3), var(--dur-2) !important;
+    transition-timing-function:
+      var(--ease-spring), var(--ease-out-quint), var(--ease-snappy), var(--ease-out-quint) !important;
+  }
+  :root [data-sonner-toast][data-removed="true"]:not([data-swiping="true"]) {
+    transition-duration: var(--dur-2), var(--dur-1), var(--dur-2), var(--dur-1) !important;
+    transition-timing-function: var(--ease-in) !important;
+  }
+}
+
+/* Theme switch: a short whole-page cross-fade where View Transitions exist (see app/theme.tsx). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--dur-3);
+  animation-timing-function: var(--ease-out-quint);
 }
 
 @keyframes row-flash {
@@ -195,5 +629,28 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important; /* stops infinite pulse/spin from strobing */
     transition-duration: 0.01ms !important;
+  }
+  /* Enters become a short opacity fade; the row flash is colour only and keeps its full length. */
+  .motion-fade-up,
+  .motion-pop,
+  .enter,
+  .enter-stagger > * {
+    animation: motion-fade 120ms linear backwards !important;
+  }
+  .motion-flash {
+    animation-duration: 1.2s !important;
+  }
+  /* Radix overlays (sheet, dialogs, menus, select, tooltip): no slide or zoom, a 120ms fade only. */
+  [data-slot][data-state] {
+    --tw-enter-translate-x: 0 !important;
+    --tw-enter-translate-y: 0 !important;
+    --tw-enter-scale: 1 !important;
+    --tw-exit-translate-x: 0 !important;
+    --tw-exit-translate-y: 0 !important;
+    --tw-exit-scale: 1 !important;
+    --tw-enter-opacity: 0 !important;
+    --tw-exit-opacity: 0 !important;
+    animation-duration: 120ms !important;
+    animation-timing-function: linear !important;
   }
 }

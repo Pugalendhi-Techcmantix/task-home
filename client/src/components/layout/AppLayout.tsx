@@ -28,12 +28,18 @@ function readSidebarOpen(): boolean {
   return !document.cookie.split("; ").includes("sidebar_state=false");
 }
 
+/** Mirrors PageHeader (title, description, actions) plus a content panel, so the swap does not jump. */
 function PageFallback() {
   return (
-    <div className="space-y-4" aria-busy="true" aria-label="Loading page">
-      <Skeleton className="h-7 w-48" />
-      <Skeleton className="h-4 w-96 max-w-full" />
-      <Skeleton className="h-64 w-full" />
+    <div className="space-y-6" aria-busy="true" aria-label="Loading page">
+      <div className="flex items-end justify-between gap-4">
+        <div className="space-y-2">
+          <Skeleton className="h-7 w-48" />
+          <Skeleton className="h-4 w-80 max-w-full" />
+        </div>
+        <Skeleton className="h-8 w-28" />
+      </div>
+      <Skeleton className="h-72 w-full rounded-panel" />
     </div>
   );
 }
@@ -46,46 +52,44 @@ export function AppLayout() {
     <NewTaskProvider>
       <SidebarProvider defaultOpen={readSidebarOpen()}>
         <AppSidebar />
-        <SidebarInset className="min-w-0">
-          <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b bg-card/95 px-3 backdrop-blur sm:px-4">
+        <SidebarInset className="canvas-glow min-w-0">
+          <header className="glass-bar sticky top-0 z-20 flex h-12 shrink-0 items-center gap-2 px-3 sm:px-4">
             <Tooltip>
               <TooltipTrigger asChild>
-                <SidebarTrigger aria-label="Toggle sidebar" />
+                <SidebarTrigger aria-label="Toggle sidebar" className="text-muted-foreground hover:text-foreground" />
               </TooltipTrigger>
               <TooltipContent>Toggle sidebar (Ctrl+B)</TooltipContent>
             </Tooltip>
             <Separator orientation="vertical" className="mr-1 data-[orientation=vertical]:h-5" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden sm:inline-flex">Team workspace</BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden sm:inline-flex" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage className="font-semibold">{title}</BreadcrumbPage>
+            <Breadcrumb className="min-w-0">
+              <BreadcrumbList className="flex-nowrap gap-1.5 text-[13px] whitespace-nowrap sm:gap-2">
+                <BreadcrumbItem className="hidden lg:inline-flex">Team workspace</BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden lg:inline-flex" />
+                <BreadcrumbItem className="min-w-0">
+                  <BreadcrumbPage className="truncate font-semibold">{title}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
             <div className="ml-auto flex items-center gap-1.5">
               <CommandPalette />
               <ThemeToggle />
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span
-                    tabIndex={0}
-                    className="grid size-8 place-items-center rounded-full border bg-secondary text-[11px] font-bold outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    aria-label="Workspace admin"
-                  >
-                    WA
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>Workspace admin</TooltipContent>
-              </Tooltip>
+              {/* Decorative only: there is no sign-in, so this is not a user menu. */}
+              <span
+                className="grid size-7 shrink-0 place-items-center rounded-full bg-secondary text-[10.5px] font-semibold text-secondary-foreground ring-1 ring-black/10 select-none dark:ring-white/15"
+                aria-hidden="true"
+              >
+                WA
+              </span>
             </div>
           </header>
-          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-            <Suspense fallback={<PageFallback />}>
-              <Outlet />
-            </Suspense>
-          </main>
+          {/* SidebarInset already renders the <main> landmark, so this wrapper is a plain div. */}
+          <div className="mx-auto w-full max-w-[1200px] flex-1 px-4 py-6 sm:px-6 sm:py-8">
+            <div key={pathname} className="enter">
+              <Suspense fallback={<PageFallback />}>
+                <Outlet />
+              </Suspense>
+            </div>
+          </div>
         </SidebarInset>
       </SidebarProvider>
     </NewTaskProvider>

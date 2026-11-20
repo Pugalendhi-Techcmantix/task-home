@@ -1,5 +1,12 @@
 import type { Member, Task, TaskStatus } from "@tracker/shared";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import {
+  useChangedIds,
+  useRowEntrance,
+  useRowExit,
+  useRowReflow,
+  type MotionProps,
+} from "@/components/common/motion";
 import { eyebrow } from "@/components/common/Page";
 import { PriorityLabel } from "@/components/common/Pill";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -19,6 +26,10 @@ interface TaskListProps extends TaskListHandlers {
   members: Member[];
   membersById: Map<string, Member>;
   highlightId: string | null;
+  /** How rows present on mount enter: a stagger on the page's first load, otherwise the list cross-fades. */
+  entrance: "stagger" | "none";
+  /** Rows whose delete is in flight: they fade out until the refetch removes them. */
+  leavingIds: ReadonlySet<string>;
 }
 
 /** Opens the assignee picker of a row (used by the ⋯ menu's "Change assignee"). */
@@ -42,22 +53,53 @@ function useAssigneeFocus() {
 
 function CreatedAt({ iso }: { iso: string }) {
   return (
-    <time dateTime={iso} title={formatDateTime(iso)} className="tabular whitespace-nowrap">
+    <time dateTime={iso} title={formatDateTime(iso)} className="num whitespace-nowrap">
       {formatShortDate(iso)}
     </time>
   );
 }
 
-const highlightClass = "animate-[row-flash_2.2s_ease-out_1]";
+const ROW_ATTR = "data-task-id";
+/** What a quick edit can change; a row whose signature changes flashes once. */
+const quickEditSignature = (task: Task) => `${task.status}|${task.priority}|${task.assigneeId ?? ""}`;
+const CHANGED: MotionProps = { className: "motion-flash" };
+/** `?task=` highlight: the same flash, held longer so it is still visible after the scroll lands. */
+const HIGHLIGHTED: MotionProps = { className: "motion-flash", style: { animationDuration: "2.4s" } };
+const NO_FLASH: MotionProps = {};
 
-export function TaskList({ tasks, members, membersById, highlightId, onStatusChange, onAssign, onDelete, onEdit }: TaskListProps) {
+/*
+ * Motion: the entrance runs on the row (<tr>/<li>) and the flash on its cells / card surface, because
+ * both use `animation` and would cancel each other on one element.
+ */
+export function TaskList({
+  tasks,
+  members,
+  membersById,
+  highlightId,
+  entrance,
+  leavingIds,
+  onStatusChange,
+  onAssign,
+  onDelete,
+  onEdit,
+}: TaskListProps) {
   const assignee = useAssigneeFocus();
   const currentOf = (task: Task) => (task.assigneeId ? membersById.get(task.assigneeId) : undefined);
 
+  const rootRef = useRef<HTMLDivElement>(null);
+  const ids = tasks.map((task) => task.id);
+  const [mode] = useState(entrance);
+  const enter = useRowEntrance(ids, mode);
+  const changed = useChangedIds(tasks, quickEditSignature);
+  useRowReflow(rootRef, ROW_ATTR, ids.join(" "));
+  useRowExit(rootRef, ROW_ATTR, leavingIds);
+  const flashOf = (task: Task): MotionProps =>
+    highlightId === task.id ? HIGHLIGHTED : changed.has(task.id) ? CHANGED : NO_FLASH;
+
   return (
-    <>
+    <div ref={rootRef} className={mode === "none" ? "animate-in duration-80 fade-in-0" : undefined}>
       {/* Desktop: table */}
-      <Table className="hidden table-fixed md:table">
+      <Table className="hidden table-fixed xl:table">
         <caption className="sr-only">Tasks</caption>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
@@ -72,72 +114,87 @@ export function TaskList({ tasks, members, membersById, highlightId, onStatusCha
           </TableRow>
         </TableHeader>
         <TableBody>
-          {tasks.map((task) => (
-            <TableRow key={task.id} data-task-id={task.id} className={cn(highlightId === task.id && highlightClass)}>
-              <TableCell className="py-3 pl-4 whitespace-normal">
-                <p className="font-medium [overflow-wrap:anywhere]">{task.title}</p>
-                {task.description && (
-                  <p className="mt-0.5 truncate text-xs text-muted-foreground" title={task.description}>
-                    {task.description}
-                  </p>
-                )}
-              </TableCell>
-              <TableCell>
-                <StatusSelect task={task} onChange={(status) => onStatusChange(task, status)} />
-              </TableCell>
-              <TableCell>
-                <PriorityLabel priority={task.priority} />
-              </TableCell>
-              <TableCell>
-                <AssigneeSelect
-                  task={task}
-                  members={members}
-                  current={currentOf(task)}
-                  triggerId={assignee.idFor(task.id, "row")}
-                  onChange={(id) => onAssign(task, id)}
-                />
-              </TableCell>
-              <TableCell className="text-xs text-muted-foreground">
-                <CreatedAt iso={task.createdAt} />
-              </TableCell>
-              <TableCell className="pr-4 text-right">
-                <RowMenu task={task} onEdit={() => onEdit(task)} onChangeAssignee={() => assignee.open(task.id)} onDelete={() => onDelete(task)} />
-              </TableCell>
-            </TableRow>
-          ))}
+          {tasks.map((task, index) => {
+            const row = enter(task.id, index);
+            const flash = flashOf(task);
+            return (
+              <TableRow
+                key={task.id}
+                data-task-id={task.id}
+                className={cn("row-interactive group h-13", row.className)}
+                style={row.style}
+              >
+                <TableCell className={cn("py-2 pl-4 whitespace-normal", flash.className)} style={flash.style}>
+                  <p className="text-[13.5px] leading-5 font-medium wrap-anywhere">{task.title}</p>
+                  {task.description && (
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground" title={task.description}>
+                      {task.description}
+                    </p>
+                  )}
+                </TableCell>
+                <TableCell className={flash.className} style={flash.style}>
+                  <StatusSelect task={task} onChange={(status) => onStatusChange(task, status)} />
+                </TableCell>
+                <TableCell className={flash.className} style={flash.style}>
+                  <PriorityLabel priority={task.priority} />
+                </TableCell>
+                <TableCell className={flash.className} style={flash.style}>
+                  <AssigneeSelect
+                    task={task}
+                    members={members}
+                    current={currentOf(task)}
+                    triggerId={assignee.idFor(task.id, "row")}
+                    onChange={(id) => onAssign(task, id)}
+                  />
+                </TableCell>
+                <TableCell className={cn("text-xs text-muted-foreground", flash.className)} style={flash.style}>
+                  <CreatedAt iso={task.createdAt} />
+                </TableCell>
+                <TableCell className={cn("py-2 pr-4 text-right", flash.className)} style={flash.style}>
+                  <RowMenu task={task} onEdit={() => onEdit(task)} onChangeAssignee={() => assignee.open(task.id)} onDelete={() => onDelete(task)} />
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
 
       {/* Phones: cards */}
-      <ul className="divide-y md:hidden" aria-label="Tasks">
-        {tasks.map((task) => (
-          <li key={task.id} data-task-id={task.id} className={cn("space-y-3 px-4 py-4", highlightId === task.id && highlightClass)}>
-            <div className="flex items-start gap-2">
-              <div className="min-w-0 flex-1">
-                <p className="font-medium [overflow-wrap:anywhere]">{task.title}</p>
-                {task.description && (
-                  <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground [overflow-wrap:anywhere]">{task.description}</p>
-                )}
+      <ul className="space-y-2 p-3 xl:hidden" aria-label="Tasks">
+        {tasks.map((task, index) => {
+          const card = enter(task.id, index);
+          const flash = flashOf(task);
+          return (
+            <li key={task.id} data-task-id={task.id} className={card.className} style={card.style}>
+              <div className={cn("surface-panel group space-y-3 p-3.5", flash.className)} style={flash.style}>
+                <div className="flex items-start gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13.5px] leading-5 font-medium wrap-anywhere">{task.title}</p>
+                    {task.description && (
+                      <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground wrap-anywhere">{task.description}</p>
+                    )}
+                  </div>
+                  <RowMenu task={task} onEdit={() => onEdit(task)} onChangeAssignee={() => assignee.open(task.id)} onDelete={() => onDelete(task)} />
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <StatusSelect task={task} onChange={(status) => onStatusChange(task, status)} />
+                  <PriorityLabel priority={task.priority} />
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    <CreatedAt iso={task.createdAt} />
+                  </span>
+                </div>
+                <AssigneeSelect
+                  task={task}
+                  members={members}
+                  current={currentOf(task)}
+                  triggerId={assignee.idFor(task.id, "card")}
+                  onChange={(id) => onAssign(task, id)}
+                />
               </div>
-              <RowMenu task={task} onEdit={() => onEdit(task)} onChangeAssignee={() => assignee.open(task.id)} onDelete={() => onDelete(task)} />
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <StatusSelect task={task} onChange={(status) => onStatusChange(task, status)} />
-              <PriorityLabel priority={task.priority} />
-              <span className="ml-auto text-xs text-muted-foreground">
-                <CreatedAt iso={task.createdAt} />
-              </span>
-            </div>
-            <AssigneeSelect
-              task={task}
-              members={members}
-              current={currentOf(task)}
-              triggerId={assignee.idFor(task.id, "card")}
-              onChange={(id) => onAssign(task, id)}
-            />
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ul>
-    </>
+    </div>
   );
 }

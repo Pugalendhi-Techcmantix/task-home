@@ -12,14 +12,18 @@ export function RouteError() {
       : "Unknown error";
 
   return (
-    <div className="grid min-h-dvh place-items-center bg-background p-6">
-      <div role="alert" className="w-full max-w-md rounded-lg border bg-card p-6 text-center">
-        <span className="mx-auto grid size-11 place-items-center rounded-full bg-bad-soft text-bad">
-          <TriangleAlert className="size-5" aria-hidden="true" />
+    <div className="canvas-glow grid min-h-dvh place-items-center bg-background p-6">
+      <div role="alert" className="surface-raised motion-fade-up w-full max-w-md p-6 text-center">
+        <span className="mx-auto grid size-10 place-items-center rounded-xl border border-bad/20 bg-bad-soft text-bad-ink">
+          <TriangleAlert className="size-5" strokeWidth={1.75} aria-hidden="true" />
         </span>
-        <h1 className="mt-4 text-base font-semibold">Something went wrong</h1>
-        <p className="mt-1 text-sm text-muted-foreground">The page hit an unexpected error. Reloading usually fixes it.</p>
-        <p className="mt-3 rounded-md bg-secondary px-3 py-2 font-mono text-xs break-words text-muted-foreground">{detail}</p>
+        <h1 className="mt-4 text-base font-semibold tracking-[-0.02em]">Something went wrong</h1>
+        <p className="mt-1 text-[13.5px] leading-relaxed text-muted-foreground">
+          The page hit an unexpected error. Reloading usually fixes it.
+        </p>
+        <p className="mt-4 rounded-lg border bg-sunken px-3 py-2 text-left font-mono text-xs wrap-break-word text-muted-foreground">
+          {detail}
+        </p>
         <Button className="mt-5" onClick={() => window.location.reload()}>
           <RotateCw aria-hidden="true" />
           Reload

@@ -1,9 +1,10 @@
 import type { Member } from "@tracker/shared";
 import { MoreHorizontal, Pencil, Plus, UserCheck, UserMinus, Users } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import { MemberAvatar } from "@/components/common/MemberAvatar";
+import { REVEAL_TRANSITION, useRowEntrance, useRowReflow } from "@/components/common/motion";
 import { EmptyState, ErrorState, PageHeader, Panel, eyebrow } from "@/components/common/Page";
 import { MemberStatusPill, RolePill } from "@/components/common/Pill";
 import { Button } from "@/components/ui/button";
@@ -34,7 +35,7 @@ function MemberMenu({ member, onEdit }: { member: Member; onEdit: () => void }) 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-8" aria-label={`Actions for ${member.name}`}>
+        <Button variant="ghost" size="icon" className={cn("reveal-on-hover size-8 text-muted-foreground", REVEAL_TRANSITION)} aria-label={`Actions for ${member.name}`}>
           <MoreHorizontal aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
@@ -53,15 +54,102 @@ function MemberMenu({ member, onEdit }: { member: Member; onEdit: () => void }) 
 }
 
 function OpenTasks({ member }: { member: Member }) {
-  if (member.openTaskCount === 0) return <span className="tabular text-faint">0</span>;
+  if (member.openTaskCount === 0) return <span className="num text-faint">0</span>;
   return (
     <Link
       to={`/tasks?assignee=${member.id}`}
-      className="tabular font-medium text-brand underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none"
+      className="num rounded-sm font-medium text-brand-ink underline-offset-4 hover:underline"
       aria-label={`${member.openTaskCount} open tasks for ${member.name}`}
     >
       {member.openTaskCount}
     </Link>
+  );
+}
+
+/** Table on wide screens, cards below. Rows stagger in on mount, new members pop in, the rest glide aside. */
+function MemberRows({ members, onEdit }: { members: Member[]; onEdit: (member: Member) => void }) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const ids = members.map((member) => member.id);
+  const enter = useRowEntrance(ids);
+  useRowReflow(rootRef, "data-member-id", ids.join(" "));
+
+  return (
+    <div ref={rootRef}>
+      <Table className="hidden lg:table">
+        <caption className="sr-only">Team members</caption>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className={cn(eyebrow, "h-9 pl-4")}>Member</TableHead>
+            <TableHead className={cn(eyebrow, "h-9 w-32")}>Role</TableHead>
+            <TableHead className={cn(eyebrow, "h-9 w-32")}>Status</TableHead>
+            <TableHead className={cn(eyebrow, "h-9 w-28 text-right")}>Open tasks</TableHead>
+            <TableHead className="h-9 w-14 pr-4">
+              <span className="sr-only">Actions</span>
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {members.map((member, index) => {
+            const inactive = member.status === "inactive";
+            const row = enter(member.id, index);
+            return (
+              <TableRow key={member.id} data-member-id={member.id} className={cn("row-interactive group", row.className)} style={row.style}>
+                <TableCell className="py-2 pl-4">
+                  <div className="flex items-center gap-3">
+                    <MemberAvatar name={member.name} size="md" muted={inactive} />
+                    <div className="min-w-0">
+                      <p className={cn("truncate text-[13.5px] font-medium", inactive ? "text-muted-foreground" : "text-foreground")}>{member.name}</p>
+                      <p className={cn("truncate text-xs", inactive ? "text-faint" : "text-muted-foreground")}>{member.email}</p>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <RolePill role={member.role} />
+                </TableCell>
+                <TableCell>
+                  <MemberStatusPill status={member.status} />
+                </TableCell>
+                <TableCell className="text-right">
+                  <OpenTasks member={member} />
+                </TableCell>
+                <TableCell className="pr-4 text-right">
+                  <MemberMenu member={member} onEdit={() => onEdit(member)} />
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+      <ul className="divide-y lg:hidden" aria-label="Team members">
+        {members.map((member, index) => {
+          const card = enter(member.id, index);
+          return (
+            <li
+              key={member.id}
+              data-member-id={member.id}
+              className={cn("row-interactive group flex items-start gap-3 px-4 py-3.5", card.className)}
+              style={card.style}
+            >
+              <MemberAvatar name={member.name} size="md" muted={member.status === "inactive"} />
+              <div className="min-w-0 flex-1 space-y-2">
+                <div>
+                  <p className={cn("truncate text-[13.5px] font-medium", member.status === "inactive" && "text-muted-foreground")}>{member.name}</p>
+                  <p className={cn("truncate text-xs", member.status === "inactive" ? "text-faint" : "text-muted-foreground")}>{member.email}</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <RolePill role={member.role} />
+                  <MemberStatusPill status={member.status} />
+                  <span className="text-muted-foreground">
+                    Open tasks: <OpenTasks member={member} />
+                  </span>
+                </div>
+              </div>
+              <MemberMenu member={member} onEdit={() => onEdit(member)} />
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
 
@@ -111,73 +199,7 @@ export function TeamPage() {
           />
         )}
         {members.isSuccess && members.data.length > 0 && (
-          <>
-            <Table className="hidden md:table">
-              <caption className="sr-only">Team members</caption>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className={cn(eyebrow, "h-9 pl-4")}>Member</TableHead>
-                  <TableHead className={cn(eyebrow, "h-9 w-32")}>Role</TableHead>
-                  <TableHead className={cn(eyebrow, "h-9 w-32")}>Status</TableHead>
-                  <TableHead className={cn(eyebrow, "h-9 w-28 text-right")}>Open tasks</TableHead>
-                  <TableHead className="h-9 w-14 pr-4">
-                    <span className="sr-only">Actions</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {members.data.map((member) => {
-                  const inactive = member.status === "inactive";
-                  return (
-                    <TableRow key={member.id} className={cn(inactive && "text-muted-foreground")}>
-                      <TableCell className="py-3 pl-4">
-                        <div className="flex items-center gap-3">
-                          <MemberAvatar name={member.name} size="md" muted={inactive} />
-                          <div className="min-w-0">
-                            <p className={cn("truncate font-medium", !inactive && "text-foreground")}>{member.name}</p>
-                            <p className="truncate text-xs text-muted-foreground">{member.email}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <RolePill role={member.role} />
-                      </TableCell>
-                      <TableCell>
-                        <MemberStatusPill status={member.status} />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <OpenTasks member={member} />
-                      </TableCell>
-                      <TableCell className="pr-4 text-right">
-                        <MemberMenu member={member} onEdit={() => setDialog({ open: true, member })} />
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-            <ul className="divide-y md:hidden" aria-label="Team members">
-              {members.data.map((member) => (
-                <li key={member.id} className="flex items-start gap-3 px-4 py-4">
-                  <MemberAvatar name={member.name} size="md" muted={member.status === "inactive"} />
-                  <div className="min-w-0 flex-1 space-y-2">
-                    <div>
-                      <p className="truncate font-medium">{member.name}</p>
-                      <p className="truncate text-xs text-muted-foreground">{member.email}</p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <RolePill role={member.role} />
-                      <MemberStatusPill status={member.status} />
-                      <span className="text-muted-foreground">
-                        Open tasks: <OpenTasks member={member} />
-                      </span>
-                    </div>
-                  </div>
-                  <MemberMenu member={member} onEdit={() => setDialog({ open: true, member })} />
-                </li>
-              ))}
-            </ul>
-          </>
+          <MemberRows members={members.data} onEdit={(member) => setDialog({ open: true, member })} />
         )}
       </Panel>
       <MemberDialog
